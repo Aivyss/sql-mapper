@@ -23,6 +23,13 @@ func BuildBasicErr(code errorCode) Error {
 			args:      map[string]string{},
 			original:  nil,
 		}
+	case Query:
+		return &defaultError{
+			errorCode: code,
+			message:   nil,
+			args:      map[string]string{},
+			original:  nil,
+		}
 	default:
 		return &defaultError{
 			errorCode: UndefinedErr,

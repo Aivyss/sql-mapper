@@ -6,4 +6,6 @@ const (
 	UndefinedID errorIdentifier = iota
 	ReadBodyErrID
 	FileReadErrID
+	FindQueryErrID
+	RegisterQueryErrID
 )

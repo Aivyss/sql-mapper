@@ -6,4 +6,5 @@ const (
 	Undefined namespace = iota
 	SqlReader
 	FileIO
+	Query
 )

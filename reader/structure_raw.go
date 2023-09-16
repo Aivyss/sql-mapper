@@ -2,57 +2,59 @@ package reader
 
 import (
 	"encoding/xml"
+	"sql-mapper/entity"
 	"strconv"
 )
 
 type bodyRaw struct {
 	XMLName    xml.Name    `xml:"Body"`
 	SelectRaws []selectRaw `xml:"Select"`
-	InputRaws  []inputRaw  `xml:"Input"`
+	InputRaws  []insertRaw `xml:"Input"`
 	UpdateRaws []updateRaw `xml:"Update"`
 	DeleteRaws []deleteRaw `xml:"Delete"`
 	CreateRaws []createRaw `xml:"Create"`
 	DropRaws   []dropRaw   `xml:"Drop"`
 }
 
-func (b bodyRaw) toEntity(filePath string) *Body {
-	var s []Select
+func (b bodyRaw) toEntity(absFilePath string) *entity.Body {
+	var s []entity.Select
 	for _, sql := range b.SelectRaws {
-		s = append(s, *sql.toEntity(filePath))
+		s = append(s, *sql.toEntity())
 	}
 
-	var i []Input
+	var i []entity.Insert
 	for _, sql := range b.InputRaws {
-		i = append(i, *sql.toEntity(filePath))
+		i = append(i, *sql.toEntity())
 	}
 
-	var u []Update
+	var u []entity.Update
 	for _, sql := range b.UpdateRaws {
-		u = append(u, *sql.toEntity(filePath))
+		u = append(u, *sql.toEntity())
 	}
 
-	var c []Create
+	var c []entity.Create
 	for _, sql := range b.CreateRaws {
-		c = append(c, *sql.toEntity(filePath))
+		c = append(c, *sql.toEntity())
 	}
 
-	var d []Delete
+	var d []entity.Delete
 	for _, sql := range b.DeleteRaws {
-		d = append(d, *sql.toEntity(filePath))
+		d = append(d, *sql.toEntity())
 	}
 
-	var drop []Drop
+	var drop []entity.Drop
 	for _, sql := range b.DropRaws {
-		drop = append(drop, *sql.toEntity(filePath))
+		drop = append(drop, *sql.toEntity())
 	}
 
-	return &Body{
-		Selects: s,
-		Inputs:  i,
-		Updates: u,
-		Creates: c,
-		Deletes: d,
-		Drops:   drop,
+	return &entity.Body{
+		AbsFilePath: absFilePath,
+		Selects:     s,
+		Inserts:     i,
+		Updates:     u,
+		Creates:     c,
+		Deletes:     d,
+		Drops:       drop,
 	}
 }
 
@@ -62,34 +64,32 @@ type selectRaw struct {
 	List string `xml:"list,attr"` // "true" or "false"
 }
 
-func (s selectRaw) toEntity(filePath string) *Select {
+func (s selectRaw) toEntity() *entity.Select {
 	listBool, err := strconv.ParseBool(s.List)
 	if err != nil {
 		listBool = false
 	}
 
-	return &Select{
+	return &entity.Select{
 		List: listBool,
-		CommonFields: CommonFields{
-			Sql:      s.Sql,
-			FilePath: filePath,
-			Name:     s.Name,
+		CommonFields: entity.CommonFields{
+			Sql:  s.Sql,
+			Name: s.Name,
 		},
 	}
 }
 
-type inputRaw struct {
+type insertRaw struct {
 	Sql  string `xml:"Input"`
 	Name string `xml:"name,attr"`
 }
 
-func (s inputRaw) toEntity(filePath string) *Input {
+func (s insertRaw) toEntity() *entity.Insert {
 
-	return &Input{
-		CommonFields: CommonFields{
-			Sql:      s.Sql,
-			FilePath: filePath,
-			Name:     s.Name,
+	return &entity.Insert{
+		CommonFields: entity.CommonFields{
+			Sql:  s.Sql,
+			Name: s.Name,
 		},
 	}
 }
@@ -99,13 +99,12 @@ type updateRaw struct {
 	Name string `xml:"name,attr"`
 }
 
-func (s updateRaw) toEntity(filePath string) *Update {
+func (s updateRaw) toEntity() *entity.Update {
 
-	return &Update{
-		CommonFields: CommonFields{
-			Sql:      s.Sql,
-			FilePath: filePath,
-			Name:     s.Name,
+	return &entity.Update{
+		CommonFields: entity.CommonFields{
+			Sql:  s.Sql,
+			Name: s.Name,
 		},
 	}
 }
@@ -115,13 +114,12 @@ type deleteRaw struct {
 	Name string `xml:"name,attr"`
 }
 
-func (s deleteRaw) toEntity(filePath string) *Delete {
+func (s deleteRaw) toEntity() *entity.Delete {
 
-	return &Delete{
-		CommonFields: CommonFields{
-			Sql:      s.Sql,
-			FilePath: filePath,
-			Name:     s.Name,
+	return &entity.Delete{
+		CommonFields: entity.CommonFields{
+			Sql:  s.Sql,
+			Name: s.Name,
 		},
 	}
 }
@@ -131,13 +129,12 @@ type createRaw struct {
 	Name string `xml:"name,attr"`
 }
 
-func (s createRaw) toEntity(filePath string) *Create {
+func (s createRaw) toEntity() *entity.Create {
 
-	return &Create{
-		CommonFields: CommonFields{
-			Sql:      s.Sql,
-			FilePath: filePath,
-			Name:     s.Name,
+	return &entity.Create{
+		CommonFields: entity.CommonFields{
+			Sql:  s.Sql,
+			Name: s.Name,
 		},
 	}
 }
@@ -147,13 +144,12 @@ type dropRaw struct {
 	Name string `xml:"name,attr"`
 }
 
-func (s dropRaw) toEntity(filePath string) *Drop {
+func (s dropRaw) toEntity() *entity.Drop {
 
-	return &Drop{
-		CommonFields: CommonFields{
-			Sql:      s.Sql,
-			FilePath: filePath,
-			Name:     s.Name,
+	return &entity.Drop{
+		CommonFields: entity.CommonFields{
+			Sql:  s.Sql,
+			Name: s.Name,
 		},
 	}
 }

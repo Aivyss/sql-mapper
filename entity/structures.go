@@ -1,18 +1,18 @@
-package reader
+package entity
 
 type Body struct {
-	Selects []Select
-	Inputs  []Input
-	Updates []Update
-	Deletes []Delete
-	Creates []Create
-	Drops   []Drop
+	AbsFilePath string
+	Selects     []Select
+	Inserts     []Insert
+	Updates     []Update
+	Deletes     []Delete
+	Creates     []Create
+	Drops       []Drop
 }
 
 type CommonFields struct {
-	Sql      string
-	Name     string
-	FilePath string
+	Sql  string
+	Name string
 }
 
 type Select struct {
@@ -20,7 +20,7 @@ type Select struct {
 	CommonFields
 }
 
-type Input struct {
+type Insert struct {
 	CommonFields
 }
 

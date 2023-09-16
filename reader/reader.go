@@ -4,10 +4,11 @@ import (
 	"encoding/xml"
 	"os"
 	"path/filepath"
+	"sql-mapper/entity"
 	"sql-mapper/errors"
 )
 
-func ReadMapperFile(filePath string) (*Body, errors.Error) {
+func ReadMapperFile(filePath string) (*entity.Body, errors.Error) {
 	xmlByteSlice, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, errors.BuildBasicErr(errors.FileReadErr)
