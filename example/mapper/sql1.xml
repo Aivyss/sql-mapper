@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Body>
+    <Select name="specificUser" list="false">
+        SELECT
+            ACCOUNT_ID,
+            USER_NAME,
+            USER_ID,
+            PASSWORD
+        FROM
+            ACCOUNT
+        WHERE
+            USER_ID = :user_id
+    </Select>
+
+    <Select name="allUsers" list="true">
+        SELECT
+            ACCOUNT_ID,
+            USER_NAME,
+            USER_ID,
+            PASSWORD
+        FROM
+            ACCOUNT
+    </Select>
+</Body>
