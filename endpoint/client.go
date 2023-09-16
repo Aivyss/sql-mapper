@@ -15,6 +15,20 @@ type defaultQueryClient struct {
 	db           *sqlx.DB
 }
 
+func (c *defaultQueryClient) InsertOneTx(ctx context.Context, tx *sqlx.Tx, tagName string, args map[string]any) errors.Error {
+	rawQuery, err := c.GetRawQuery(tagName, enum.INSERT)
+	if err != nil {
+		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
+	}
+
+	_, sqlxErr := tx.ExecContext(ctx, *rawQuery, args)
+	if sqlxErr != nil {
+		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
+	}
+
+	return nil
+}
+
 func NewQueryClient(db *sqlx.DB, identifier string, filePath string) (QueryClient, errors.Error) {
 	queryMap, err := store.Register(identifier, filePath)
 	statementMap := map[string]*sqlx.NamedStmt{}
@@ -78,9 +92,18 @@ func NewQueryClient(db *sqlx.DB, identifier string, filePath string) (QueryClien
 	}, nil
 }
 
-func (c *defaultQueryClient) GetOneByTagName(ctx context.Context, tagName string, dest any, args map[string]any) errors.Error {
+func (c *defaultQueryClient) InsertOne(ctx context.Context, tagName string, args map[string]any) errors.Error {
 	statement := c.statementMap[fmt.Sprintf(store.SelectPathFormat, c.queryMap.FilePath, tagName)]
+	_, err := statement.ExecContext(ctx, args)
+	if err != nil {
+		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
+	}
 
+	return nil
+}
+
+func (c *defaultQueryClient) GetOne(ctx context.Context, tagName string, dest any, args map[string]any) errors.Error {
+	statement := c.statementMap[fmt.Sprintf(store.SelectPathFormat, c.queryMap.FilePath, tagName)]
 	err := statement.GetContext(ctx, dest, args) // execute
 	if err != nil {
 		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
@@ -89,9 +112,8 @@ func (c *defaultQueryClient) GetOneByTagName(ctx context.Context, tagName string
 	return nil
 }
 
-func (c *defaultQueryClient) GetByTagName(ctx context.Context, tagName string, dest any, args map[string]any) errors.Error {
+func (c *defaultQueryClient) Get(ctx context.Context, tagName string, dest any, args map[string]any) errors.Error {
 	statement := c.statementMap[fmt.Sprintf(store.SelectPathFormat, c.queryMap.FilePath, tagName)]
-
 	err := statement.SelectContext(ctx, dest, args) // execute
 	if err != nil {
 		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
@@ -121,4 +143,60 @@ func (c *defaultQueryClient) GetRawQuery(tagName string, e enum.QueryEnum) (*str
 	}
 
 	return &sql, nil
+}
+
+func (c *defaultQueryClient) GetTx(ctx context.Context, tx *sqlx.Tx, tagName string, dest any, args map[string]any) errors.Error {
+	rawQuery, err := c.GetRawQuery(tagName, enum.SELECT)
+	if err != nil {
+		return err
+	}
+
+	sqlxErr := tx.SelectContext(ctx, dest, *rawQuery, args)
+	if sqlxErr != nil {
+		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, sqlxErr)
+	}
+
+	return nil
+}
+
+func (c *defaultQueryClient) BeginTx(_ context.Context) (*sqlx.Tx, errors.Error) {
+	//TODO implement me
+	tx, err := c.db.Beginx()
+	if err != nil {
+		return nil, errors.BuildErrWithOriginal(errors.BeginTxErr, err)
+	}
+
+	return tx, nil
+}
+
+func (c *defaultQueryClient) GetOneTx(ctx context.Context, tx *sqlx.Tx, tagName string, dest any, args map[string]any) errors.Error {
+	rawQuery, err := c.GetRawQuery(tagName, enum.SELECT)
+	if err != nil {
+		return err
+	}
+
+	sqlxErr := tx.GetContext(ctx, dest, *rawQuery, args)
+	if sqlxErr != nil {
+		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, sqlxErr)
+	}
+
+	return nil
+}
+
+func (c *defaultQueryClient) RollbackTx(_ context.Context, tx *sqlx.Tx) errors.Error {
+	sqlxErr := tx.Rollback()
+	if sqlxErr != nil {
+		return errors.BuildErrWithOriginal(errors.CommitTxERr, sqlxErr)
+	}
+
+	return nil
+}
+
+func (c *defaultQueryClient) CommitTx(_ context.Context, tx *sqlx.Tx) errors.Error {
+	sqlxErr := tx.Commit()
+	if sqlxErr != nil {
+		return errors.BuildErrWithOriginal(errors.CommitTxERr, sqlxErr)
+	}
+
+	return nil
 }
