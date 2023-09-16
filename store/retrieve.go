@@ -29,3 +29,12 @@ func RetrieveQuery(identifier string, queryEnum enum.QueryEnum, tagName string) 
 
 	return &sql, nil
 }
+
+func RetrieveQueryMap(identifier string) (*QueryMap, errors.Error) {
+	queryMap, ok := queryStore[identifier]
+	if !ok {
+		return nil, errors.BuildBasicErr(errors.FindQueryMapErr)
+	}
+
+	return queryMap, nil
+}

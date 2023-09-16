@@ -7,4 +7,5 @@ const (
 	SqlReader
 	FileIO
 	Query
+	Sqlx
 )

@@ -6,7 +6,7 @@ import (
 	"sql-mapper/errors"
 )
 
-func PersistQueries(identifier string, queryBody *entity.Body) errors.Error {
+func PersistQueries(identifier string, queryBody *entity.Body) (*QueryMap, errors.Error) {
 	path := queryBody.AbsFilePath
 	selectMap := map[string]*entity.Select{}
 	insertMap := map[string]*entity.Insert{}
@@ -36,10 +36,10 @@ func PersistQueries(identifier string, queryBody *entity.Body) errors.Error {
 
 	_, ok := queryStore[identifier]
 	if ok {
-		return errors.BuildBasicErr(errors.RegisterQueryErr)
+		return nil, errors.BuildBasicErr(errors.DuplicatedIdentifierErr)
 	}
 
-	queryStore[identifier] = QueryMap{
+	queryMapPointer := &QueryMap{
 		FilePath:  path,
 		SelectMap: selectMap,
 		InsertMap: insertMap,
@@ -48,6 +48,7 @@ func PersistQueries(identifier string, queryBody *entity.Body) errors.Error {
 		CreateMap: createMap,
 		DropMap:   dropMap,
 	}
+	queryStore[identifier] = queryMapPointer
 
-	return nil
+	return queryMapPointer, nil
 }

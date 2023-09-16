@@ -15,7 +15,7 @@ const (
 	DropPathFormat   = "%v/DROP/%v"
 )
 
-var queryStore = map[string]QueryMap{} // key: filePath value: *QueryMap
+var queryStore = map[string]*QueryMap{} // key: filePath value: *QueryMap
 
 type QueryMap struct {
 	FilePath  string
