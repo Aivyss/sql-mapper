@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Body>
+    <Select name="specificUser" list="false">
+        SELECT
+            ACCOUNT_ID,
+            USER_NAME,
+            USER_ID,
+            PASSWORD
+        FROM
+            ACCOUNT
+        WHERE
+            USER_ID = :user_id
+    </Select>
+
+    <Select name="allUsers" list="true">
+        SELECT
+        ACCOUNT_ID,
+        USER_NAME,
+        USER_ID,
+        PASSWORD
+        FROM
+        ACCOUNT
+    </Select>
+
+    <Insert name="saveOneUser">
+        INSERT INTO ACCOUNT (
+            USER_NAME,
+            USER_ID,
+            PASSWORD
+        ) VALUES (
+            :user_name,
+            :user_id,
+            :password
+        )
+    </Insert>
+
+    <Update name="updateUserNameForOneUser">
+        UPDATE ACCOUNT SET
+            USER_NAME = :user_name
+        WHERE
+            USER_ID = :user_id
+    </Update>
+
+    <Delete name="deleteOneUser">
+        DELETE FROM ACCOUNT
+        WHERE
+            USER_ID = :user_id
+    </Delete>
+
+    <Delete name="fullDelete">
+        DELETE FROM ACCOUNT
+        WHERE 1=1
+    </Delete>
+</Body>

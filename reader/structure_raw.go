@@ -9,7 +9,7 @@ import (
 type dmlBodyRaw struct {
 	XMLName    xml.Name    `xml:"Body"`
 	SelectRaws []selectRaw `xml:"Select"`
-	InputRaws  []insertRaw `xml:"Input"`
+	InputRaws  []insertRaw `xml:"Insert"`
 	UpdateRaws []updateRaw `xml:"Update"`
 	DeleteRaws []deleteRaw `xml:"Delete"`
 }
@@ -66,7 +66,7 @@ func (s selectRaw) toEntity() *entity.Select {
 }
 
 type insertRaw struct {
-	Sql  string `xml:"Input"`
+	Sql  string `xml:",chardata"`
 	Name string `xml:"name,attr"`
 }
 

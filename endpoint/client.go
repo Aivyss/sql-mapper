@@ -2,7 +2,6 @@ package endpoint
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"sql-mapper/entity"
@@ -120,12 +119,10 @@ func (c *defaultQueryClient) GetTx(ctx context.Context, tx *sqlx.Tx, tagName str
 		return errors.BuildBasicErr(errors.NoTxErr)
 	}
 
-	rawQuery, err := c.GetRawQuery(tagName, enum.SELECT)
-	if err != nil {
-		return err
-	}
+	statement := c.statementMap[fmt.Sprintf(enum.SelectPathFormat, c.queryMap.FilePath, tagName)]
+	reformedStatement := tx.NamedStmtContext(ctx, statement)
 
-	sqlxErr := tx.SelectContext(ctx, dest, *rawQuery, args)
+	sqlxErr := reformedStatement.SelectContext(ctx, dest, args)
 	if sqlxErr != nil {
 		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, sqlxErr)
 	}
@@ -134,7 +131,6 @@ func (c *defaultQueryClient) GetTx(ctx context.Context, tx *sqlx.Tx, tagName str
 }
 
 func (c *defaultQueryClient) BeginTx(_ context.Context) (*sqlx.Tx, errors.Error) {
-	//TODO implement me
 	tx, err := c.db.Beginx()
 	if err != nil {
 		return nil, errors.BuildErrWithOriginal(errors.BeginTxErr, err)
@@ -148,12 +144,10 @@ func (c *defaultQueryClient) GetOneTx(ctx context.Context, tx *sqlx.Tx, tagName 
 		return errors.BuildBasicErr(errors.NoTxErr)
 	}
 
-	rawQuery, err := c.GetRawQuery(tagName, enum.SELECT)
-	if err != nil {
-		return err
-	}
+	statement := c.statementMap[fmt.Sprintf(enum.SelectPathFormat, c.queryMap.FilePath, tagName)]
+	reformedStatement := tx.NamedStmtContext(ctx, statement)
 
-	sqlxErr := tx.GetContext(ctx, dest, *rawQuery, args)
+	sqlxErr := reformedStatement.GetContext(ctx, dest, args)
 	if sqlxErr != nil {
 		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, sqlxErr)
 	}
@@ -202,24 +196,22 @@ func (c *defaultQueryClient) Delete(ctx context.Context, tagName string, args ma
 	return rowsNum, nil
 }
 
-func (c *defaultQueryClient) DeleteTx(ctx context.Context, tx *sql.Tx, tagName string, args map[string]any) (int64, errors.Error) {
+func (c *defaultQueryClient) DeleteTx(ctx context.Context, tx *sqlx.Tx, tagName string, args map[string]any) (int64, errors.Error) {
 	if tx == nil {
 		return 0, errors.BuildBasicErr(errors.NoTxErr)
 	}
 
-	rawQuery, err := c.GetRawQuery(tagName, enum.DELETE)
-	if err != nil {
-		return 0, err
-	}
+	statement := c.statementMap[fmt.Sprintf(enum.DeletePathFormat, c.queryMap.FilePath, tagName)]
+	reformedStatement := tx.NamedStmtContext(ctx, statement)
 
-	result, sqlxErr := tx.ExecContext(ctx, *rawQuery, args)
+	result, sqlxErr := reformedStatement.ExecContext(ctx, args)
 	if sqlxErr != nil {
-		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
+		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, sqlxErr)
 	}
 
 	rowsNum, sqlxErr := result.RowsAffected()
 	if sqlxErr != nil {
-		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
+		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, sqlxErr)
 	}
 
 	return rowsNum, nil
@@ -235,7 +227,7 @@ func (c *defaultQueryClient) InsertOneTx(ctx context.Context, tx *sqlx.Tx, tagNa
 		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
 	}
 
-	_, sqlxErr := tx.ExecContext(ctx, *rawQuery, args)
+	_, sqlxErr := tx.NamedExecContext(ctx, *rawQuery, args)
 	if sqlxErr != nil {
 		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
 	}
@@ -264,19 +256,17 @@ func (c *defaultQueryClient) UpdateTx(ctx context.Context, tx *sqlx.Tx, tagName 
 		return 0, errors.BuildBasicErr(errors.NoTxErr)
 	}
 
-	rawQuery, err := c.GetRawQuery(tagName, enum.UPDATE)
-	if err != nil {
-		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
-	}
+	statement := c.statementMap[fmt.Sprintf(enum.UpdatePathFormat, c.queryMap.FilePath, tagName)]
+	reformedStatement := tx.NamedStmtContext(ctx, statement)
 
-	result, sqlxErr := tx.ExecContext(ctx, *rawQuery, args)
+	result, sqlxErr := reformedStatement.ExecContext(ctx, args)
 	if sqlxErr != nil {
-		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
+		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, sqlxErr)
 	}
 
 	rowsNum, sqlxErr := result.RowsAffected()
 	if sqlxErr != nil {
-		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
+		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, sqlxErr)
 	}
 
 	return rowsNum, nil
