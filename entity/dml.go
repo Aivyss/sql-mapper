@@ -1,13 +1,11 @@
 package entity
 
-type Body struct {
+type DMLBody struct {
 	AbsFilePath string
 	Selects     []Select
 	Inserts     []Insert
 	Updates     []Update
 	Deletes     []Delete
-	Creates     []Create
-	Drops       []Drop
 }
 
 type CommonFields struct {

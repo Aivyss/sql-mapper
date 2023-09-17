@@ -12,4 +12,5 @@ const (
 	ExecuteQueryErrID
 	BeginTxErrID
 	CommitTxErrID
+	NoTxErrID
 )

@@ -2,31 +2,19 @@ package endpoint
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"sql-mapper/entity"
 	"sql-mapper/enum"
 	"sql-mapper/errors"
 	"sql-mapper/store"
 )
 
 type defaultQueryClient struct {
-	queryMap     *store.QueryMap
+	queryMap     *entity.QueryMap
 	statementMap map[string]*sqlx.NamedStmt
 	db           *sqlx.DB
-}
-
-func (c *defaultQueryClient) InsertOneTx(ctx context.Context, tx *sqlx.Tx, tagName string, args map[string]any) errors.Error {
-	rawQuery, err := c.GetRawQuery(tagName, enum.INSERT)
-	if err != nil {
-		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
-	}
-
-	_, sqlxErr := tx.ExecContext(ctx, *rawQuery, args)
-	if sqlxErr != nil {
-		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
-	}
-
-	return nil
 }
 
 func NewQueryClient(db *sqlx.DB, identifier string, filePath string) (QueryClient, errors.Error) {
@@ -68,22 +56,6 @@ func NewQueryClient(db *sqlx.DB, identifier string, filePath string) (QueryClien
 
 		statementMap[fullPath] = statement
 	}
-	for fullPath, s := range queryMap.CreateMap {
-		statement, sqlxErr := db.PrepareNamed(s.Sql)
-		if sqlxErr != nil {
-			panic(sqlxErr)
-		}
-
-		statementMap[fullPath] = statement
-	}
-	for fullPath, s := range queryMap.DropMap {
-		statement, sqlxErr := db.PrepareNamed(s.Sql)
-		if sqlxErr != nil {
-			panic(sqlxErr)
-		}
-
-		statementMap[fullPath] = statement
-	}
 
 	return &defaultQueryClient{
 		db:           db,
@@ -93,7 +65,7 @@ func NewQueryClient(db *sqlx.DB, identifier string, filePath string) (QueryClien
 }
 
 func (c *defaultQueryClient) InsertOne(ctx context.Context, tagName string, args map[string]any) errors.Error {
-	statement := c.statementMap[fmt.Sprintf(store.SelectPathFormat, c.queryMap.FilePath, tagName)]
+	statement := c.statementMap[fmt.Sprintf(enum.InsertPathFormat, c.queryMap.FilePath, tagName)]
 	_, err := statement.ExecContext(ctx, args)
 	if err != nil {
 		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
@@ -103,7 +75,7 @@ func (c *defaultQueryClient) InsertOne(ctx context.Context, tagName string, args
 }
 
 func (c *defaultQueryClient) GetOne(ctx context.Context, tagName string, dest any, args map[string]any) errors.Error {
-	statement := c.statementMap[fmt.Sprintf(store.SelectPathFormat, c.queryMap.FilePath, tagName)]
+	statement := c.statementMap[fmt.Sprintf(enum.SelectPathFormat, c.queryMap.FilePath, tagName)]
 	err := statement.GetContext(ctx, dest, args) // execute
 	if err != nil {
 		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
@@ -113,7 +85,7 @@ func (c *defaultQueryClient) GetOne(ctx context.Context, tagName string, dest an
 }
 
 func (c *defaultQueryClient) Get(ctx context.Context, tagName string, dest any, args map[string]any) errors.Error {
-	statement := c.statementMap[fmt.Sprintf(store.SelectPathFormat, c.queryMap.FilePath, tagName)]
+	statement := c.statementMap[fmt.Sprintf(enum.SelectPathFormat, c.queryMap.FilePath, tagName)]
 	err := statement.SelectContext(ctx, dest, args) // execute
 	if err != nil {
 		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
@@ -123,29 +95,31 @@ func (c *defaultQueryClient) Get(ctx context.Context, tagName string, dest any, 
 }
 
 func (c *defaultQueryClient) GetRawQuery(tagName string, e enum.QueryEnum) (*string, errors.Error) {
-	var sql string
+	var query string
 
 	switch e {
 	case enum.SELECT:
-		sql = c.queryMap.SelectMap[fmt.Sprintf(store.SelectPathFormat, c.queryMap.FilePath, tagName)].Sql
+		query = c.queryMap.SelectMap[fmt.Sprintf(enum.SelectPathFormat, c.queryMap.FilePath, tagName)].Sql
 	case enum.INSERT:
-		sql = c.queryMap.InsertMap[fmt.Sprintf(store.InsertPathFormat, c.queryMap.FilePath, tagName)].Sql
+		query = c.queryMap.InsertMap[fmt.Sprintf(enum.InsertPathFormat, c.queryMap.FilePath, tagName)].Sql
 	case enum.UPDATE:
-		sql = c.queryMap.UpdateMap[fmt.Sprintf(store.UpdatePathFormat, c.queryMap.FilePath, tagName)].Sql
+		query = c.queryMap.UpdateMap[fmt.Sprintf(enum.UpdatePathFormat, c.queryMap.FilePath, tagName)].Sql
 	case enum.DELETE:
-		sql = c.queryMap.DeleteMap[fmt.Sprintf(store.DeletePathFormat, c.queryMap.FilePath, tagName)].Sql
-	case enum.CREATE:
-		sql = c.queryMap.CreateMap[fmt.Sprintf(store.CreatePathFormat, c.queryMap.FilePath, tagName)].Sql
-	case enum.DROP:
-		sql = c.queryMap.DropMap[fmt.Sprintf(store.DropPathFormat, c.queryMap.FilePath, tagName)].Sql
+		query = c.queryMap.DeleteMap[fmt.Sprintf(enum.DeletePathFormat, c.queryMap.FilePath, tagName)].Sql
+	case enum.CREATE, enum.DROP:
+		func() {}()
 	default:
 		return nil, errors.BuildBasicErr(errors.FindQueryErr)
 	}
 
-	return &sql, nil
+	return &query, nil
 }
 
 func (c *defaultQueryClient) GetTx(ctx context.Context, tx *sqlx.Tx, tagName string, dest any, args map[string]any) errors.Error {
+	if tx == nil {
+		return errors.BuildBasicErr(errors.NoTxErr)
+	}
+
 	rawQuery, err := c.GetRawQuery(tagName, enum.SELECT)
 	if err != nil {
 		return err
@@ -170,6 +144,10 @@ func (c *defaultQueryClient) BeginTx(_ context.Context) (*sqlx.Tx, errors.Error)
 }
 
 func (c *defaultQueryClient) GetOneTx(ctx context.Context, tx *sqlx.Tx, tagName string, dest any, args map[string]any) errors.Error {
+	if tx == nil {
+		return errors.BuildBasicErr(errors.NoTxErr)
+	}
+
 	rawQuery, err := c.GetRawQuery(tagName, enum.SELECT)
 	if err != nil {
 		return err
@@ -184,19 +162,122 @@ func (c *defaultQueryClient) GetOneTx(ctx context.Context, tx *sqlx.Tx, tagName 
 }
 
 func (c *defaultQueryClient) RollbackTx(_ context.Context, tx *sqlx.Tx) errors.Error {
+	if tx == nil {
+		return errors.BuildBasicErr(errors.NoTxErr)
+	}
+
 	sqlxErr := tx.Rollback()
 	if sqlxErr != nil {
-		return errors.BuildErrWithOriginal(errors.CommitTxERr, sqlxErr)
+		return errors.BuildErrWithOriginal(errors.CommitTxErr, sqlxErr)
 	}
 
 	return nil
 }
 
 func (c *defaultQueryClient) CommitTx(_ context.Context, tx *sqlx.Tx) errors.Error {
+	if tx == nil {
+		return errors.BuildBasicErr(errors.NoTxErr)
+	}
+
 	sqlxErr := tx.Commit()
 	if sqlxErr != nil {
-		return errors.BuildErrWithOriginal(errors.CommitTxERr, sqlxErr)
+		return errors.BuildErrWithOriginal(errors.CommitTxErr, sqlxErr)
 	}
 
 	return nil
+}
+
+func (c *defaultQueryClient) Delete(ctx context.Context, tagName string, args map[string]any) (int64, errors.Error) {
+	statement := c.statementMap[fmt.Sprintf(enum.DeletePathFormat, c.queryMap.FilePath, tagName)]
+
+	result, err := statement.ExecContext(ctx, args)
+	if err != nil {
+		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
+	}
+	rowsNum, err := result.RowsAffected()
+	if err != nil {
+		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
+	}
+
+	return rowsNum, nil
+}
+
+func (c *defaultQueryClient) DeleteTx(ctx context.Context, tx *sql.Tx, tagName string, args map[string]any) (int64, errors.Error) {
+	if tx == nil {
+		return 0, errors.BuildBasicErr(errors.NoTxErr)
+	}
+
+	rawQuery, err := c.GetRawQuery(tagName, enum.DELETE)
+	if err != nil {
+		return 0, err
+	}
+
+	result, sqlxErr := tx.ExecContext(ctx, *rawQuery, args)
+	if sqlxErr != nil {
+		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
+	}
+
+	rowsNum, sqlxErr := result.RowsAffected()
+	if sqlxErr != nil {
+		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
+	}
+
+	return rowsNum, nil
+}
+
+func (c *defaultQueryClient) InsertOneTx(ctx context.Context, tx *sqlx.Tx, tagName string, args map[string]any) errors.Error {
+	if tx == nil {
+		return errors.BuildBasicErr(errors.NoTxErr)
+	}
+
+	rawQuery, err := c.GetRawQuery(tagName, enum.INSERT)
+	if err != nil {
+		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
+	}
+
+	_, sqlxErr := tx.ExecContext(ctx, *rawQuery, args)
+	if sqlxErr != nil {
+		return errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
+	}
+
+	return nil
+}
+
+func (c *defaultQueryClient) Update(ctx context.Context, tagName string, args map[string]any) (int64, errors.Error) {
+	statement := c.statementMap[fmt.Sprintf(enum.UpdatePathFormat, c.queryMap.FilePath, tagName)]
+
+	result, sqlxErr := statement.ExecContext(ctx, args)
+	if sqlxErr != nil {
+		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, sqlxErr)
+	}
+
+	rowsNum, sqlxErr := result.RowsAffected()
+	if sqlxErr != nil {
+		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, sqlxErr)
+	}
+
+	return rowsNum, nil
+}
+
+func (c *defaultQueryClient) UpdateTx(ctx context.Context, tx *sqlx.Tx, tagName string, args map[string]any) (int64, errors.Error) {
+	if tx == nil {
+		return 0, errors.BuildBasicErr(errors.NoTxErr)
+	}
+
+	rawQuery, err := c.GetRawQuery(tagName, enum.UPDATE)
+	if err != nil {
+		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
+	}
+
+	result, sqlxErr := tx.ExecContext(ctx, *rawQuery, args)
+	if sqlxErr != nil {
+		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
+	}
+
+	rowsNum, sqlxErr := result.RowsAffected()
+	if sqlxErr != nil {
+		return 0, errors.BuildErrWithOriginal(errors.ExecuteQueryErr, err)
+	}
+
+	return rowsNum, nil
 }

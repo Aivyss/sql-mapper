@@ -8,7 +8,7 @@ import (
 	"sql-mapper/errors"
 )
 
-func ReadMapperFile(filePath string) (*entity.Body, errors.Error) {
+func ReadMapperFile(filePath string) (*entity.DMLBody, errors.Error) {
 	xmlByteSlice, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, errors.BuildBasicErr(errors.FileReadErr)
@@ -19,7 +19,7 @@ func ReadMapperFile(filePath string) (*entity.Body, errors.Error) {
 		return nil, errors.BuildBasicErr(errors.FileReadErr)
 	}
 
-	body := new(bodyRaw)
+	body := new(dmlBodyRaw)
 	err = xml.Unmarshal(xmlByteSlice, body)
 	if err != nil {
 		return nil, errors.BuildBasicErr(errors.ReadBodyErr)

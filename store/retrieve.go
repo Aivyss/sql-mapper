@@ -2,6 +2,7 @@ package store
 
 import (
 	"fmt"
+	"sql-mapper/entity"
 	"sql-mapper/enum"
 	"sql-mapper/errors"
 )
@@ -12,17 +13,15 @@ func RetrieveQuery(identifier string, queryEnum enum.QueryEnum, tagName string) 
 
 	switch queryEnum {
 	case enum.SELECT:
-		sql = queryMap.SelectMap[fmt.Sprintf(SelectPathFormat, queryMap.FilePath, tagName)].Sql
+		sql = queryMap.SelectMap[fmt.Sprintf(enum.SelectPathFormat, queryMap.FilePath, tagName)].Sql
 	case enum.INSERT:
-		sql = queryMap.InsertMap[fmt.Sprintf(InsertPathFormat, queryMap.FilePath, tagName)].Sql
+		sql = queryMap.InsertMap[fmt.Sprintf(enum.InsertPathFormat, queryMap.FilePath, tagName)].Sql
 	case enum.UPDATE:
-		sql = queryMap.UpdateMap[fmt.Sprintf(UpdatePathFormat, queryMap.FilePath, tagName)].Sql
+		sql = queryMap.UpdateMap[fmt.Sprintf(enum.UpdatePathFormat, queryMap.FilePath, tagName)].Sql
 	case enum.DELETE:
-		sql = queryMap.DeleteMap[fmt.Sprintf(DeletePathFormat, queryMap.FilePath, tagName)].Sql
-	case enum.CREATE:
-		sql = queryMap.CreateMap[fmt.Sprintf(CreatePathFormat, queryMap.FilePath, tagName)].Sql
-	case enum.DROP:
-		sql = queryMap.DropMap[fmt.Sprintf(DropPathFormat, queryMap.FilePath, tagName)].Sql
+		sql = queryMap.DeleteMap[fmt.Sprintf(enum.DeletePathFormat, queryMap.FilePath, tagName)].Sql
+	case enum.CREATE, enum.DROP:
+		func() {}()
 	default:
 		return nil, errors.BuildBasicErr(errors.FindQueryErr)
 	}
@@ -30,7 +29,7 @@ func RetrieveQuery(identifier string, queryEnum enum.QueryEnum, tagName string) 
 	return &sql, nil
 }
 
-func RetrieveQueryMap(identifier string) (*QueryMap, errors.Error) {
+func RetrieveQueryMap(identifier string) (*entity.QueryMap, errors.Error) {
 	queryMap, ok := queryStore[identifier]
 	if !ok {
 		return nil, errors.BuildBasicErr(errors.FindQueryMapErr)

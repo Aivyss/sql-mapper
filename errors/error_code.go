@@ -9,7 +9,8 @@ var (
 	FindQueryMapErr         = newErrorCode(FindQueryMapErrID, Query, "query store already has the identifier")
 	ExecuteQueryErr         = newErrorCode(ExecuteQueryErrID, Sqlx, "fail to execute query")
 	BeginTxErr              = newErrorCode(BeginTxErrID, Sqlx, "fail to execute query")
-	CommitTxERr             = newErrorCode(CommitTxErrID, Sqlx, "fail to commit the transaction")
+	CommitTxErr             = newErrorCode(CommitTxErrID, Sqlx, "fail to commit the transaction")
+	NoTxErr                 = newErrorCode(NoTxErrID, Sqlx, "nil Tx pointer is not allowed")
 )
 
 type errorCode struct {

@@ -6,17 +6,15 @@ import (
 	"strconv"
 )
 
-type bodyRaw struct {
+type dmlBodyRaw struct {
 	XMLName    xml.Name    `xml:"Body"`
 	SelectRaws []selectRaw `xml:"Select"`
 	InputRaws  []insertRaw `xml:"Input"`
 	UpdateRaws []updateRaw `xml:"Update"`
 	DeleteRaws []deleteRaw `xml:"Delete"`
-	CreateRaws []createRaw `xml:"Create"`
-	DropRaws   []dropRaw   `xml:"Drop"`
 }
 
-func (b bodyRaw) toEntity(absFilePath string) *entity.Body {
+func (b dmlBodyRaw) toEntity(absFilePath string) *entity.DMLBody {
 	var s []entity.Select
 	for _, sql := range b.SelectRaws {
 		s = append(s, *sql.toEntity())
@@ -32,29 +30,17 @@ func (b bodyRaw) toEntity(absFilePath string) *entity.Body {
 		u = append(u, *sql.toEntity())
 	}
 
-	var c []entity.Create
-	for _, sql := range b.CreateRaws {
-		c = append(c, *sql.toEntity())
-	}
-
 	var d []entity.Delete
 	for _, sql := range b.DeleteRaws {
 		d = append(d, *sql.toEntity())
 	}
 
-	var drop []entity.Drop
-	for _, sql := range b.DropRaws {
-		drop = append(drop, *sql.toEntity())
-	}
-
-	return &entity.Body{
+	return &entity.DMLBody{
 		AbsFilePath: absFilePath,
 		Selects:     s,
 		Inserts:     i,
 		Updates:     u,
-		Creates:     c,
 		Deletes:     d,
-		Drops:       drop,
 	}
 }
 
