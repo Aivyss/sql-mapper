@@ -8,7 +8,6 @@ import (
 	"sql-mapper/errors"
 )
 
-// TODO: 1 define methods
 type QueryClient interface {
 	BeginTx(ctx context.Context) (*sqlx.Tx, errors.Error)
 	RollbackTx(ctx context.Context, tx *sqlx.Tx) errors.Error

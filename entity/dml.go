@@ -29,11 +29,3 @@ type Update struct {
 type Delete struct {
 	CommonFields
 }
-
-type Create struct {
-	CommonFields
-}
-
-type Drop struct {
-	CommonFields
-}
