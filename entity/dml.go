@@ -1,5 +1,13 @@
 package entity
 
+type QueryEntity interface {
+	Path() string
+	Tag() string
+	GetRawSql() string
+	GetParts() []*Part
+	IsSimpleSql() bool
+}
+
 type DMLBody struct {
 	AbsFilePath string
 	Selects     []*Select
@@ -20,25 +28,41 @@ type Part struct {
 }
 
 type Select struct {
+	*CommonFields
+}
+
+type CommonFields struct {
+	FilePath  string
 	Name      string
 	RawSql    string
 	Parts     []*Part
 	SimpleSql bool
 }
 
-type CommonFields struct {
-	Sql  string
-	Name string
+func (q *CommonFields) Path() string {
+	return q.FilePath
+}
+func (q *CommonFields) Tag() string {
+	return q.Name
+}
+func (q *CommonFields) GetRawSql() string {
+	return q.RawSql
+}
+func (q *CommonFields) GetParts() []*Part {
+	return q.Parts
+}
+func (q *CommonFields) IsSimpleSql() bool {
+	return q.SimpleSql
 }
 
 type Insert struct {
-	CommonFields
+	*CommonFields
 }
 
 type Update struct {
-	CommonFields
+	*CommonFields
 }
 
 type Delete struct {
-	CommonFields
+	*CommonFields
 }

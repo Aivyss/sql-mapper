@@ -30,13 +30,13 @@ func ReadMapperFile(filePath string) (*entity.DMLBody, errors.Error) {
 		raw.CharData = helper.ReplaceNewLineAndTabToSpace(raw.CharData)
 	}
 	for _, raw := range body.InputRaws {
-		raw.Sql = helper.ReplaceNewLineAndTabToSpace(raw.Sql)
+		raw.CharData = helper.ReplaceNewLineAndTabToSpace(raw.CharData)
 	}
 	for _, raw := range body.DeleteRaws {
-		raw.Sql = helper.ReplaceNewLineAndTabToSpace(raw.Sql)
+		raw.CharData = helper.ReplaceNewLineAndTabToSpace(raw.CharData)
 	}
 	for _, raw := range body.UpdateRaws {
-		raw.Sql = helper.ReplaceNewLineAndTabToSpace(raw.Sql)
+		raw.CharData = helper.ReplaceNewLineAndTabToSpace(raw.CharData)
 	}
 
 	return body.toEntity(absFilePath)

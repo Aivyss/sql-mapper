@@ -27,17 +27,29 @@ func (b dmlBodyRaw) toEntity(absFilePath string) (*entity.DMLBody, errors.Error)
 
 	var i []*entity.Insert
 	for _, sql := range b.InputRaws {
-		i = append(i, sql.toEntity())
+		elem, err := sql.toEntity()
+		if err != nil {
+			return nil, err
+		}
+		i = append(i, elem)
 	}
 
 	var u []*entity.Update
 	for _, sql := range b.UpdateRaws {
-		u = append(u, sql.toEntity())
+		elem, err := sql.toEntity()
+		if err != nil {
+			return nil, err
+		}
+		u = append(u, elem)
 	}
 
 	var d []*entity.Delete
 	for _, sql := range b.DeleteRaws {
-		d = append(d, sql.toEntity())
+		elem, err := sql.toEntity()
+		if err != nil {
+			return nil, err
+		}
+		d = append(d, elem)
 	}
 
 	return &entity.DMLBody{
@@ -50,48 +62,93 @@ func (b dmlBodyRaw) toEntity(absFilePath string) (*entity.DMLBody, errors.Error)
 }
 
 type insertRaw struct {
-	Sql  string `xml:",chardata"`
-	Name string `xml:"name,attr"`
+	//XMLName  xml.Name   `xml:"Insert"`
+	CharData string     `xml:",chardata"`
+	Name     string     `xml:"name,attr"`
+	PartRaws []*partRaw `xml:"Part"`
 }
 
-func (s insertRaw) toEntity() *entity.Insert {
+func (s insertRaw) toEntity() (*entity.Insert, errors.Error) {
+
+	if helper.IsBlank(s.CharData) && len(s.PartRaws) == 0 {
+		return nil, errors.BuildBasicErr(errors.ParseQueryErr)
+	}
+
+	part := []*entity.Part{}
+	if helper.IsBlank(s.CharData) {
+		for _, raw := range s.PartRaws {
+			part = append(part, raw.toEntity())
+		}
+	}
 
 	return &entity.Insert{
-		CommonFields: entity.CommonFields{
-			Sql:  s.Sql,
-			Name: s.Name,
+		CommonFields: &entity.CommonFields{
+			RawSql:    s.CharData,
+			SimpleSql: !helper.IsBlank(s.CharData),
+			Parts:     part,
+			Name:      s.Name,
 		},
-	}
+	}, nil
 }
 
 type updateRaw struct {
-	Sql  string `xml:",chardata"`
-	Name string `xml:"name,attr"`
+	//XMLName  xml.Name   `xml:"Update"`
+	CharData string     `xml:",chardata"`
+	Name     string     `xml:"name,attr"`
+	PartRaws []*partRaw `xml:"Part"`
 }
 
-func (s updateRaw) toEntity() *entity.Update {
+func (s updateRaw) toEntity() (*entity.Update, errors.Error) {
+
+	if helper.IsBlank(s.CharData) && len(s.PartRaws) == 0 {
+		return nil, errors.BuildBasicErr(errors.ParseQueryErr)
+	}
+
+	part := []*entity.Part{}
+	if helper.IsBlank(s.CharData) {
+		for _, raw := range s.PartRaws {
+			part = append(part, raw.toEntity())
+		}
+	}
 
 	return &entity.Update{
-		CommonFields: entity.CommonFields{
-			Sql:  s.Sql,
-			Name: s.Name,
+		CommonFields: &entity.CommonFields{
+			RawSql:    s.CharData,
+			SimpleSql: !helper.IsBlank(s.CharData),
+			Parts:     part,
+			Name:      s.Name,
 		},
-	}
+	}, nil
 }
 
 type deleteRaw struct {
-	Sql  string `xml:",chardata"`
-	Name string `xml:"name,attr"`
+	//XMLName  xml.Name   `xml:"Delete"`
+	CharData string     `xml:",chardata"`
+	Name     string     `xml:"name,attr"`
+	PartRaws []*partRaw `xml:"Part"`
 }
 
-func (s deleteRaw) toEntity() *entity.Delete {
+func (s deleteRaw) toEntity() (*entity.Delete, errors.Error) {
+
+	if helper.IsBlank(s.CharData) && len(s.PartRaws) == 0 {
+		return nil, errors.BuildBasicErr(errors.ParseQueryErr)
+	}
+
+	part := []*entity.Part{}
+	if helper.IsBlank(s.CharData) {
+		for _, raw := range s.PartRaws {
+			part = append(part, raw.toEntity())
+		}
+	}
 
 	return &entity.Delete{
-		CommonFields: entity.CommonFields{
-			Sql:  s.Sql,
-			Name: s.Name,
+		CommonFields: &entity.CommonFields{
+			RawSql:    s.CharData,
+			SimpleSql: !helper.IsBlank(s.CharData),
+			Parts:     part,
+			Name:      s.Name,
 		},
-	}
+	}, nil
 }
 
 type selectRaw struct {
@@ -114,10 +171,12 @@ func (s *selectRaw) toEntity() (*entity.Select, errors.Error) {
 	}
 
 	return &entity.Select{
-		RawSql:    s.CharData,
-		SimpleSql: !helper.IsBlank(s.CharData),
-		Parts:     part,
-		Name:      s.Name,
+		CommonFields: &entity.CommonFields{
+			RawSql:    s.CharData,
+			SimpleSql: !helper.IsBlank(s.CharData),
+			Parts:     part,
+			Name:      s.Name,
+		},
 	}, nil
 }
 
