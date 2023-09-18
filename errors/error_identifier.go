@@ -13,4 +13,5 @@ const (
 	BeginTxErrID
 	CommitTxErrID
 	NoTxErrID
+	ParseSqlErrID
 )

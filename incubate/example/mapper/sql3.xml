@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Body>
+    <Select name="allUsers" list="true">
+        SELECT
+            ACCOUNT_ID,
+            USER_NAME,
+            USER_ID,
+            PASSWORD
+        FROM
+            ACCOUNT
+    </Select>
+
+    <Select name="specificUser" list="false">
+        <Part>
+            SELECT
+        </Part>
+        <Part name="condition1">
+            <Case name="case1">
+                USER_NAME,
+            </Case>
+            <Case name="case2">
+
+            </Case>
+        </Part>
+        <Part>
+                USER_ID,
+        </Part>
+        <Part name="condition2">
+            <Case name="case3">
+                PASSWORD,
+            </Case>
+            <Case name="case4">
+
+            </Case>
+        </Part>
+        <Part>
+                ACCOUNT_ID
+            FROM
+                ACCOUNT
+            WHERE
+                USER_ID = :user_id
+        </Part>
+    </Select>
+
+    <Insert name="saveOneUser">
+        INSERT INTO ACCOUNT (
+            USER_NAME,
+            USER_ID,
+            PASSWORD
+        ) VALUES (
+            :user_name,
+            :user_id,
+            :password
+        )
+    </Insert>
+
+    <Delete name="fullDelete">
+        DELETE FROM ACCOUNT
+        WHERE 1=1
+    </Delete>
+</Body>

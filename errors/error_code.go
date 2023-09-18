@@ -7,6 +7,7 @@ var (
 	FindQueryErr            = newErrorCode(FindQueryErrID, Query, "fail to find the query")
 	DuplicatedIdentifierErr = newErrorCode(DuplicatedIdentifierErrID, Query, "query store already has the identifier")
 	FindQueryMapErr         = newErrorCode(FindQueryMapErrID, Query, "query store already has the identifier")
+	ParseQueryErr           = newErrorCode(ParseSqlErrID, Query, "fail to parse query")
 	ExecuteQueryErr         = newErrorCode(ExecuteQueryErrID, Sqlx, "fail to execute query")
 	BeginTxErr              = newErrorCode(BeginTxErrID, Sqlx, "fail to execute query")
 	CommitTxErr             = newErrorCode(CommitTxErrID, Sqlx, "fail to commit the transaction")

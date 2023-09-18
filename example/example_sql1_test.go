@@ -3,7 +3,6 @@ package example
 import (
 	"context"
 	"fmt"
-	_ "github.com/lib/pq" // PostgreSQL
 	"testing"
 )
 

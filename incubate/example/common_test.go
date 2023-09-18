@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 	db = sqlx.MustConnect(dbDriver, datasourceName)
 	c1, _ := endpoint.NewQueryClient(db, "identifier1", "./mapper/sql1.xml")
 	client1 = c1
-	c2, _ := endpoint.NewQueryClient(db, "identifier", "./mapper/sql2.xml")
+	c2, _ := endpoint.NewQueryClient(db, "identifier2", "./mapper/sql2.xml")
 	client2 = c2
 
 	// run tests
