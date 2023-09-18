@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"sql-mapper/entity"
 	"sql-mapper/errors"
+	"sql-mapper/helper"
 )
 
 func ReadMapperFile(filePath string) (*entity.DMLBody, errors.Error) {
@@ -14,7 +15,7 @@ func ReadMapperFile(filePath string) (*entity.DMLBody, errors.Error) {
 		return nil, errors.BuildBasicErr(errors.FileReadErr)
 	}
 
-	absPath, err := filepath.Abs(filePath)
+	absFilePath, err := filepath.Abs(filePath)
 	if err != nil {
 		return nil, errors.BuildBasicErr(errors.FileReadErr)
 	}
@@ -22,8 +23,21 @@ func ReadMapperFile(filePath string) (*entity.DMLBody, errors.Error) {
 	body := new(dmlBodyRaw)
 	err = xml.Unmarshal(xmlByteSlice, body)
 	if err != nil {
-		return nil, errors.BuildBasicErr(errors.ReadBodyErr)
+		return nil, errors.BuildErrWithOriginal(errors.ReadBodyErr, err)
 	}
 
-	return body.toEntity(absPath), nil
+	for _, raw := range body.SelectRaws {
+		raw.CharData = helper.ReplaceNewLineAndTabToSpace(raw.CharData)
+	}
+	for _, raw := range body.InputRaws {
+		raw.Sql = helper.ReplaceNewLineAndTabToSpace(raw.Sql)
+	}
+	for _, raw := range body.DeleteRaws {
+		raw.Sql = helper.ReplaceNewLineAndTabToSpace(raw.Sql)
+	}
+	for _, raw := range body.UpdateRaws {
+		raw.Sql = helper.ReplaceNewLineAndTabToSpace(raw.Sql)
+	}
+
+	return body.toEntity(absFilePath)
 }

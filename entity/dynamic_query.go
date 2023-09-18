@@ -1,6 +1,6 @@
 package entity
 
-import "sql-mapper/incubate/enum"
+import "sql-mapper/enum"
 
 type DynamicQuery struct {
 	Key         []Condition

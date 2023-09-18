@@ -3,36 +3,41 @@ package reader
 import (
 	"encoding/xml"
 	"sql-mapper/entity"
-	"strconv"
+	"sql-mapper/errors"
+	"sql-mapper/helper"
 )
 
 type dmlBodyRaw struct {
-	XMLName    xml.Name    `xml:"Body"`
-	SelectRaws []selectRaw `xml:"Select"`
-	InputRaws  []insertRaw `xml:"Insert"`
-	UpdateRaws []updateRaw `xml:"Update"`
-	DeleteRaws []deleteRaw `xml:"Delete"`
+	XMLName    xml.Name     `xml:"Body"`
+	SelectRaws []*selectRaw `xml:"Select"`
+	InputRaws  []*insertRaw `xml:"Insert"`
+	UpdateRaws []*updateRaw `xml:"Update"`
+	DeleteRaws []*deleteRaw `xml:"Delete"`
 }
 
-func (b dmlBodyRaw) toEntity(absFilePath string) *entity.DMLBody {
-	var s []entity.Select
+func (b dmlBodyRaw) toEntity(absFilePath string) (*entity.DMLBody, errors.Error) {
+	var s []*entity.Select
 	for _, sql := range b.SelectRaws {
-		s = append(s, *sql.toEntity())
+		elem, err := sql.toEntity()
+		if err != nil {
+			return nil, err
+		}
+		s = append(s, elem)
 	}
 
-	var i []entity.Insert
+	var i []*entity.Insert
 	for _, sql := range b.InputRaws {
-		i = append(i, *sql.toEntity())
+		i = append(i, sql.toEntity())
 	}
 
-	var u []entity.Update
+	var u []*entity.Update
 	for _, sql := range b.UpdateRaws {
-		u = append(u, *sql.toEntity())
+		u = append(u, sql.toEntity())
 	}
 
-	var d []entity.Delete
+	var d []*entity.Delete
 	for _, sql := range b.DeleteRaws {
-		d = append(d, *sql.toEntity())
+		d = append(d, sql.toEntity())
 	}
 
 	return &entity.DMLBody{
@@ -41,28 +46,7 @@ func (b dmlBodyRaw) toEntity(absFilePath string) *entity.DMLBody {
 		Inserts:     i,
 		Updates:     u,
 		Deletes:     d,
-	}
-}
-
-type selectRaw struct {
-	Sql  string `xml:",chardata"`
-	Name string `xml:"name,attr"`
-	List string `xml:"list,attr"` // "true" or "false"
-}
-
-func (s selectRaw) toEntity() *entity.Select {
-	listBool, err := strconv.ParseBool(s.List)
-	if err != nil {
-		listBool = false
-	}
-
-	return &entity.Select{
-		List: listBool,
-		CommonFields: entity.CommonFields{
-			Sql:  s.Sql,
-			Name: s.Name,
-		},
-	}
+	}, nil
 }
 
 type insertRaw struct {
@@ -110,32 +94,61 @@ func (s deleteRaw) toEntity() *entity.Delete {
 	}
 }
 
-type createRaw struct {
-	Sql  string `xml:",chardata"`
-	Name string `xml:"name,attr"`
+type selectRaw struct {
+	XMLName  xml.Name   `xml:"Select"`
+	CharData string     `xml:",chardata"`
+	Name     string     `xml:"name,attr"`
+	PartRaws []*partRaw `xml:"Part"`
 }
 
-func (s createRaw) toEntity() *entity.Create {
+func (s *selectRaw) toEntity() (*entity.Select, errors.Error) {
+	if helper.IsBlank(s.CharData) && len(s.PartRaws) == 0 {
+		return nil, errors.BuildBasicErr(errors.ParseQueryErr)
+	}
 
-	return &entity.Create{
-		CommonFields: entity.CommonFields{
-			Sql:  s.Sql,
-			Name: s.Name,
-		},
+	part := []*entity.Part{}
+	if helper.IsBlank(s.CharData) {
+		for _, raw := range s.PartRaws {
+			part = append(part, raw.toEntity())
+		}
+	}
+
+	return &entity.Select{
+		RawSql:    s.CharData,
+		SimpleSql: !helper.IsBlank(s.CharData),
+		Parts:     part,
+		Name:      s.Name,
+	}, nil
+}
+
+type partRaw struct {
+	Name     string    `xml:"name,attr"`
+	CharData string    `xml:",chardata"`
+	CaseRaws []caseRaw `xml:"Case"`
+}
+
+func (p *partRaw) toEntity() *entity.Part {
+
+	cases := []*entity.Case{}
+	for _, raw := range p.CaseRaws {
+		cases = append(cases, raw.toEntity())
+	}
+
+	return &entity.Part{
+		Name:     p.Name,
+		Cases:    cases,
+		CharData: helper.ReplaceNewLineAndTabToSpace(p.CharData),
 	}
 }
 
-type dropRaw struct {
-	Sql  string `xml:",chardata"`
-	Name string `xml:"name,attr"`
+type caseRaw struct {
+	Name     string `xml:"name,attr"`
+	CharData string `xml:",chardata"`
 }
 
-func (s dropRaw) toEntity() *entity.Drop {
-
-	return &entity.Drop{
-		CommonFields: entity.CommonFields{
-			Sql:  s.Sql,
-			Name: s.Name,
-		},
+func (c *caseRaw) toEntity() *entity.Case {
+	return &entity.Case{
+		Name:     c.Name,
+		CharData: helper.ReplaceNewLineAndTabToSpace(c.CharData),
 	}
 }

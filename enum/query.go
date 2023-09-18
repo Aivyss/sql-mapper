@@ -7,6 +7,4 @@ const (
 	INSERT
 	UPDATE
 	DELETE
-	CREATE
-	DROP
 )

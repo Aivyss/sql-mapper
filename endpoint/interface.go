@@ -3,7 +3,6 @@ package endpoint
 import (
 	"context"
 	"github.com/jmoiron/sqlx"
-	"sql-mapper/enum"
 	"sql-mapper/errors"
 )
 
@@ -26,5 +25,5 @@ type QueryClient interface {
 	Update(ctx context.Context, tagName string, args map[string]any) (int64, errors.Error)
 	UpdateTx(ctx context.Context, tx *sqlx.Tx, tagName string, args map[string]any) (int64, errors.Error)
 
-	GetRawQuery(tagName string, enum enum.QueryEnum) (*string, errors.Error)
+	//GetRawQuery(tagName string, enum enum.QueryEnum) (*string, errors.Error)
 }

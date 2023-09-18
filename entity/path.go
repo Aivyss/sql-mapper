@@ -3,7 +3,7 @@ package entity
 import (
 	"fmt"
 	"sort"
-	"sql-mapper/incubate/enum"
+	"sql-mapper/enum"
 )
 
 type Path struct {

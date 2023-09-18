@@ -3,8 +3,8 @@ package example
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"sql-mapper/incubate/endpoint"
-	"sql-mapper/incubate/reader"
+	"sql-mapper/endpoint"
+	"sql-mapper/reader"
 	"testing"
 )
 
@@ -17,7 +17,7 @@ func TestReadMapperFile(t *testing.T) {
 	fmt.Println(raw)
 }
 
-func TestNewQueryClient(t *testing.T) {
+func TestNewQueryClient3(t *testing.T) {
 	_, err := endpoint.NewQueryClient(db, "identifier-TestNewQueryClient", "./mapper/sql3.xml")
 	assert.Nil(t, err)
 }

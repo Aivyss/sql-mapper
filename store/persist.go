@@ -20,16 +20,16 @@ func PersistQueries(identifier string, queryBody *entity.DMLBody) (*entity.Query
 	deleteMap := map[string]*entity.Delete{}
 
 	for _, query := range queryBody.Selects {
-		selectMap[fmt.Sprintf(enum.SelectPathFormat, path, query.Name)] = &query
+		selectMap[fmt.Sprintf(enum.PathFormatGen.SelectPathFormat(), path, query.Name)] = query
 	}
 	for _, query := range queryBody.Inserts {
-		insertMap[fmt.Sprintf(enum.InsertPathFormat, path, query.Name)] = &query
+		insertMap[fmt.Sprintf(enum.PathFormatGen.InsertPathFormat(), path, query.Name)] = query
 	}
 	for _, query := range queryBody.Updates {
-		updateMap[fmt.Sprintf(enum.UpdatePathFormat, path, query.Name)] = &query
+		updateMap[fmt.Sprintf(enum.PathFormatGen.UpdatePathFormat(), path, query.Name)] = query
 	}
 	for _, query := range queryBody.Deletes {
-		deleteMap[fmt.Sprintf(enum.DeletePathFormat, path, query.Name)] = &query
+		deleteMap[fmt.Sprintf(enum.PathFormatGen.DeletePathFormat(), path, query.Name)] = query
 	}
 
 	queryMapPointer := &entity.QueryMap{
