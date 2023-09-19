@@ -17,10 +17,10 @@ type rawPath struct {
 	FilePath   string
 	SqlTagName string
 	DmlEnum    enum.QueryEnum
-	Conditions []Condition
+	Conditions []*Condition
 }
 
-func NewRawPath(filePath string, tagName string, dmlEnum enum.QueryEnum, conditions ...Condition) *rawPath {
+func NewRawPath(filePath string, tagName string, dmlEnum enum.QueryEnum, conditions ...*Condition) *rawPath {
 	sort.Slice(conditions, func(i, j int) bool {
 		return fmt.Sprintf("%v-%v", conditions[i].PartName, conditions[i].CaseName) <
 			fmt.Sprintf("%v-%v", conditions[j].PartName, conditions[j].CaseName)

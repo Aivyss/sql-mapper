@@ -18,7 +18,7 @@ type dmlBodyRaw struct {
 func (b dmlBodyRaw) toEntity(absFilePath string) (*entity.DMLBody, errors.Error) {
 	var s []*entity.Select
 	for _, sql := range b.SelectRaws {
-		elem, err := sql.toEntity()
+		elem, err := sql.toEntity(absFilePath)
 		if err != nil {
 			return nil, err
 		}
@@ -27,7 +27,7 @@ func (b dmlBodyRaw) toEntity(absFilePath string) (*entity.DMLBody, errors.Error)
 
 	var i []*entity.Insert
 	for _, sql := range b.InputRaws {
-		elem, err := sql.toEntity()
+		elem, err := sql.toEntity(absFilePath)
 		if err != nil {
 			return nil, err
 		}
@@ -36,7 +36,7 @@ func (b dmlBodyRaw) toEntity(absFilePath string) (*entity.DMLBody, errors.Error)
 
 	var u []*entity.Update
 	for _, sql := range b.UpdateRaws {
-		elem, err := sql.toEntity()
+		elem, err := sql.toEntity(absFilePath)
 		if err != nil {
 			return nil, err
 		}
@@ -45,7 +45,7 @@ func (b dmlBodyRaw) toEntity(absFilePath string) (*entity.DMLBody, errors.Error)
 
 	var d []*entity.Delete
 	for _, sql := range b.DeleteRaws {
-		elem, err := sql.toEntity()
+		elem, err := sql.toEntity(absFilePath)
 		if err != nil {
 			return nil, err
 		}
@@ -68,7 +68,7 @@ type insertRaw struct {
 	PartRaws []*partRaw `xml:"Part"`
 }
 
-func (s insertRaw) toEntity() (*entity.Insert, errors.Error) {
+func (s insertRaw) toEntity(absFilePath string) (*entity.Insert, errors.Error) {
 
 	if helper.IsBlank(s.CharData) && len(s.PartRaws) == 0 {
 		return nil, errors.BuildBasicErr(errors.ParseQueryErr)
@@ -83,6 +83,7 @@ func (s insertRaw) toEntity() (*entity.Insert, errors.Error) {
 
 	return &entity.Insert{
 		CommonFields: &entity.CommonFields{
+			FilePath:  absFilePath,
 			RawSql:    s.CharData,
 			SimpleSql: !helper.IsBlank(s.CharData),
 			Parts:     part,
@@ -98,7 +99,7 @@ type updateRaw struct {
 	PartRaws []*partRaw `xml:"Part"`
 }
 
-func (s updateRaw) toEntity() (*entity.Update, errors.Error) {
+func (s updateRaw) toEntity(absFilePath string) (*entity.Update, errors.Error) {
 
 	if helper.IsBlank(s.CharData) && len(s.PartRaws) == 0 {
 		return nil, errors.BuildBasicErr(errors.ParseQueryErr)
@@ -113,6 +114,7 @@ func (s updateRaw) toEntity() (*entity.Update, errors.Error) {
 
 	return &entity.Update{
 		CommonFields: &entity.CommonFields{
+			FilePath:  absFilePath,
 			RawSql:    s.CharData,
 			SimpleSql: !helper.IsBlank(s.CharData),
 			Parts:     part,
@@ -128,7 +130,7 @@ type deleteRaw struct {
 	PartRaws []*partRaw `xml:"Part"`
 }
 
-func (s deleteRaw) toEntity() (*entity.Delete, errors.Error) {
+func (s deleteRaw) toEntity(absFilePath string) (*entity.Delete, errors.Error) {
 
 	if helper.IsBlank(s.CharData) && len(s.PartRaws) == 0 {
 		return nil, errors.BuildBasicErr(errors.ParseQueryErr)
@@ -143,6 +145,7 @@ func (s deleteRaw) toEntity() (*entity.Delete, errors.Error) {
 
 	return &entity.Delete{
 		CommonFields: &entity.CommonFields{
+			FilePath:  absFilePath,
 			RawSql:    s.CharData,
 			SimpleSql: !helper.IsBlank(s.CharData),
 			Parts:     part,
@@ -158,7 +161,7 @@ type selectRaw struct {
 	PartRaws []*partRaw `xml:"Part"`
 }
 
-func (s *selectRaw) toEntity() (*entity.Select, errors.Error) {
+func (s *selectRaw) toEntity(absFilePath string) (*entity.Select, errors.Error) {
 	if helper.IsBlank(s.CharData) && len(s.PartRaws) == 0 {
 		return nil, errors.BuildBasicErr(errors.ParseQueryErr)
 	}
@@ -172,6 +175,7 @@ func (s *selectRaw) toEntity() (*entity.Select, errors.Error) {
 
 	return &entity.Select{
 		CommonFields: &entity.CommonFields{
+			FilePath:  absFilePath,
 			RawSql:    s.CharData,
 			SimpleSql: !helper.IsBlank(s.CharData),
 			Parts:     part,

@@ -58,4 +58,16 @@
         DELETE FROM ACCOUNT
         WHERE 1=1
     </Delete>
+
+    <Insert name="saveOneUser">
+        INSERT INTO ACCOUNT (
+            USER_NAME,
+            USER_ID,
+            PASSWORD
+        ) VALUES (
+            :user_name,
+            :user_id,
+            :password
+        )
+    </Insert>
 </Body>

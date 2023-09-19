@@ -63,8 +63,9 @@ func NewQueryClient(db *sqlx.DB, identifier string, filePath string) (QueryClien
 	}, nil
 }
 
-func (c *defaultQueryClient) InsertOne(ctx context.Context, tagName string, args map[string]any) errors.Error {
-	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.INSERT).ToPath()
+func (c *defaultQueryClient) InsertOne(ctx context.Context, tagName string, args map[string]any, conditions ...entity.PredicateConditions) errors.Error {
+	cSlice := getConditionFromPredicates(conditions)
+	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.INSERT, cSlice...).ToPath()
 	statement := c.statementMap[path]
 	_, err := statement.ExecContext(ctx, args)
 	if err != nil {
@@ -74,8 +75,9 @@ func (c *defaultQueryClient) InsertOne(ctx context.Context, tagName string, args
 	return nil
 }
 
-func (c *defaultQueryClient) GetOne(ctx context.Context, tagName string, dest any, args map[string]any) errors.Error {
-	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.SELECT).ToPath()
+func (c *defaultQueryClient) GetOne(ctx context.Context, tagName string, dest any, args map[string]any, conditions ...entity.PredicateConditions) errors.Error {
+	cSlice := getConditionFromPredicates(conditions)
+	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.SELECT, cSlice...).ToPath()
 	statement := c.statementMap[path]
 	err := statement.GetContext(ctx, dest, args) // execute
 	if err != nil {
@@ -85,8 +87,9 @@ func (c *defaultQueryClient) GetOne(ctx context.Context, tagName string, dest an
 	return nil
 }
 
-func (c *defaultQueryClient) Get(ctx context.Context, tagName string, dest any, args map[string]any) errors.Error {
-	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.SELECT).ToPath()
+func (c *defaultQueryClient) Get(ctx context.Context, tagName string, dest any, args map[string]any, conditions ...entity.PredicateConditions) errors.Error {
+	cSlice := getConditionFromPredicates(conditions)
+	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.SELECT, cSlice...).ToPath()
 	statement := c.statementMap[path]
 	err := statement.SelectContext(ctx, dest, args) // execute
 	if err != nil {
@@ -96,12 +99,13 @@ func (c *defaultQueryClient) Get(ctx context.Context, tagName string, dest any, 
 	return nil
 }
 
-func (c *defaultQueryClient) GetTx(ctx context.Context, tx *sqlx.Tx, tagName string, dest any, args map[string]any) errors.Error {
+func (c *defaultQueryClient) GetTx(ctx context.Context, tx *sqlx.Tx, tagName string, dest any, args map[string]any, conditions ...entity.PredicateConditions) errors.Error {
 	if tx == nil {
 		return errors.BuildBasicErr(errors.NoTxErr)
 	}
 
-	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.SELECT).ToPath()
+	cSlice := getConditionFromPredicates(conditions)
+	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.SELECT, cSlice...).ToPath()
 	statement := c.statementMap[path]
 	reformedStatement := tx.NamedStmtContext(ctx, statement)
 
@@ -122,11 +126,13 @@ func (c *defaultQueryClient) BeginTx(_ context.Context) (*sqlx.Tx, errors.Error)
 	return tx, nil
 }
 
-func (c *defaultQueryClient) GetOneTx(ctx context.Context, tx *sqlx.Tx, tagName string, dest any, args map[string]any) errors.Error {
+func (c *defaultQueryClient) GetOneTx(ctx context.Context, tx *sqlx.Tx, tagName string, dest any, args map[string]any, conditions ...entity.PredicateConditions) errors.Error {
 	if tx == nil {
 		return errors.BuildBasicErr(errors.NoTxErr)
 	}
-	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.SELECT).ToPath()
+
+	cSlice := getConditionFromPredicates(conditions)
+	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.SELECT, cSlice...).ToPath()
 	statement := c.statementMap[path]
 	reformedStatement := tx.NamedStmtContext(ctx, statement)
 
@@ -164,8 +170,9 @@ func (c *defaultQueryClient) CommitTx(_ context.Context, tx *sqlx.Tx) errors.Err
 	return nil
 }
 
-func (c *defaultQueryClient) Delete(ctx context.Context, tagName string, args map[string]any) (int64, errors.Error) {
-	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.DELETE).ToPath()
+func (c *defaultQueryClient) Delete(ctx context.Context, tagName string, args map[string]any, conditions ...entity.PredicateConditions) (int64, errors.Error) {
+	cSlice := getConditionFromPredicates(conditions)
+	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.DELETE, cSlice...).ToPath()
 	statement := c.statementMap[path]
 
 	result, err := statement.ExecContext(ctx, args)
@@ -180,12 +187,13 @@ func (c *defaultQueryClient) Delete(ctx context.Context, tagName string, args ma
 	return rowsNum, nil
 }
 
-func (c *defaultQueryClient) DeleteTx(ctx context.Context, tx *sqlx.Tx, tagName string, args map[string]any) (int64, errors.Error) {
+func (c *defaultQueryClient) DeleteTx(ctx context.Context, tx *sqlx.Tx, tagName string, args map[string]any, conditions ...entity.PredicateConditions) (int64, errors.Error) {
 	if tx == nil {
 		return 0, errors.BuildBasicErr(errors.NoTxErr)
 	}
 
-	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.DELETE).ToPath()
+	cSlice := getConditionFromPredicates(conditions)
+	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.DELETE, cSlice...).ToPath()
 	statement := c.statementMap[path]
 	reformedStatement := tx.NamedStmtContext(ctx, statement)
 
@@ -202,12 +210,13 @@ func (c *defaultQueryClient) DeleteTx(ctx context.Context, tx *sqlx.Tx, tagName 
 	return rowsNum, nil
 }
 
-func (c *defaultQueryClient) InsertOneTx(ctx context.Context, tx *sqlx.Tx, tagName string, args map[string]any) errors.Error {
+func (c *defaultQueryClient) InsertOneTx(ctx context.Context, tx *sqlx.Tx, tagName string, args map[string]any, conditions ...entity.PredicateConditions) errors.Error {
 	if tx == nil {
 		return errors.BuildBasicErr(errors.NoTxErr)
 	}
 
-	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.INSERT).ToPath()
+	cSlice := getConditionFromPredicates(conditions)
+	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.INSERT, cSlice...).ToPath()
 	statement := c.statementMap[path]
 	reformedStatement := tx.NamedStmtContext(ctx, statement)
 
@@ -219,8 +228,9 @@ func (c *defaultQueryClient) InsertOneTx(ctx context.Context, tx *sqlx.Tx, tagNa
 	return nil
 }
 
-func (c *defaultQueryClient) Update(ctx context.Context, tagName string, args map[string]any) (int64, errors.Error) {
-	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.UPDATE).ToPath()
+func (c *defaultQueryClient) Update(ctx context.Context, tagName string, args map[string]any, conditions ...entity.PredicateConditions) (int64, errors.Error) {
+	cSlice := getConditionFromPredicates(conditions)
+	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.UPDATE, cSlice...).ToPath()
 	statement := c.statementMap[path]
 
 	result, sqlxErr := statement.ExecContext(ctx, args)
@@ -236,12 +246,13 @@ func (c *defaultQueryClient) Update(ctx context.Context, tagName string, args ma
 	return rowsNum, nil
 }
 
-func (c *defaultQueryClient) UpdateTx(ctx context.Context, tx *sqlx.Tx, tagName string, args map[string]any) (int64, errors.Error) {
+func (c *defaultQueryClient) UpdateTx(ctx context.Context, tx *sqlx.Tx, tagName string, args map[string]any, conditions ...entity.PredicateConditions) (int64, errors.Error) {
 	if tx == nil {
 		return 0, errors.BuildBasicErr(errors.NoTxErr)
 	}
 
-	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.UPDATE).ToPath()
+	cSlice := getConditionFromPredicates(conditions)
+	path := entity.NewRawPath(c.queryMap.FilePath, tagName, enum.UPDATE, cSlice...).ToPath()
 	statement := c.statementMap[path]
 	reformedStatement := tx.NamedStmtContext(ctx, statement)
 
@@ -268,7 +279,7 @@ func getDynamicQuery(m []entity.QueryEntity) []*entity.DynamicQuery {
 			sqls = append(sqls, &entity.DynamicQuery{
 				FilePath:    s.Path(),
 				TagName:     s.Tag(),
-				Key:         []entity.Condition{},
+				Key:         []*entity.Condition{},
 				DmlEnum:     enum.SELECT,
 				SqlPartials: []string{s.GetRawSql()},
 			})
@@ -279,7 +290,7 @@ func getDynamicQuery(m []entity.QueryEntity) []*entity.DynamicQuery {
 						sqls = append(sqls, &entity.DynamicQuery{
 							FilePath:    s.Path(),
 							TagName:     s.Tag(),
-							Key:         []entity.Condition{},
+							Key:         []*entity.Condition{},
 							DmlEnum:     enum.SELECT,
 							SqlPartials: []string{part.CharData},
 						})
@@ -306,7 +317,7 @@ func getDynamicQuery(m []entity.QueryEntity) []*entity.DynamicQuery {
 								SqlPartials: sqlCopy,
 							}
 
-							newQuery.Key = append(newQuery.Key, entity.Condition{
+							newQuery.Key = append(newQuery.Key, &entity.Condition{
 								CaseName: c.Name,
 								PartName: part.Name,
 							})
@@ -348,4 +359,13 @@ func registerDynamicQuery(db *sqlx.DB, dynamicQueries []*entity.DynamicQuery, dm
 
 		statementMap[entity.NewRawPath(sql.FilePath, sql.TagName, dmlEnum, sql.Key...).ToPath()] = statement
 	}
+}
+
+func getConditionFromPredicates(conditions []entity.PredicateConditions) []*entity.Condition {
+	var cSlice []*entity.Condition
+	for _, condition := range conditions {
+		cc := condition()
+		cSlice = append(cSlice, cc...)
+	}
+	return cSlice
 }
