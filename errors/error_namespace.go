@@ -8,4 +8,5 @@ const (
 	FileIO
 	Query
 	Sqlx
+	Context
 )

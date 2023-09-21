@@ -1,43 +1,41 @@
-package reader
+package xml
 
 import (
 	"encoding/xml"
-	"os"
-	"path/filepath"
 	"sql-mapper/entity"
 	"sql-mapper/errors"
 	"sql-mapper/helper"
+	"sql-mapper/reader/xml/component"
 )
 
 func ReadMapperFile(filePath string) (*entity.DMLBody, errors.Error) {
-	xmlByteSlice, err := os.ReadFile(filePath)
+	xmlByteSlice, absFilePath, err := helper.ReadFile(filePath)
 	if err != nil {
-		return nil, errors.BuildBasicErr(errors.FileReadErr)
+		return nil, err
 	}
 
-	absFilePath, err := filepath.Abs(filePath)
-	if err != nil {
-		return nil, errors.BuildBasicErr(errors.FileReadErr)
-	}
-
-	body := new(dmlBodyRaw)
-	err = xml.Unmarshal(xmlByteSlice, body)
-	if err != nil {
+	body := new(component.DmlBodyComponent)
+	xmlErr := xml.Unmarshal(xmlByteSlice, body)
+	if xmlErr != nil {
 		return nil, errors.BuildErrWithOriginal(errors.ReadBodyErr, err)
 	}
 
-	for _, raw := range body.SelectRaws {
+	for _, raw := range body.Selects {
 		raw.CharData = helper.ReplaceNewLineAndTabToSpace(raw.CharData)
 	}
-	for _, raw := range body.InputRaws {
+	for _, raw := range body.Inserts {
 		raw.CharData = helper.ReplaceNewLineAndTabToSpace(raw.CharData)
 	}
-	for _, raw := range body.DeleteRaws {
+	for _, raw := range body.Deletes {
 		raw.CharData = helper.ReplaceNewLineAndTabToSpace(raw.CharData)
 	}
-	for _, raw := range body.UpdateRaws {
+	for _, raw := range body.Updates {
 		raw.CharData = helper.ReplaceNewLineAndTabToSpace(raw.CharData)
 	}
 
-	return body.toEntity(absFilePath)
+	return body.ToEntity(*absFilePath)
+}
+
+func ReadSettings(filePath string) {
+
 }

@@ -7,12 +7,12 @@ import (
 	"math/rand"
 	"sql-mapper/endpoint"
 	"sql-mapper/entity"
-	"sql-mapper/reader"
+	"sql-mapper/reader/xml"
 	"testing"
 )
 
 func TestReadMapperFile(t *testing.T) {
-	raw, err := reader.ReadMapperFile("./mapper/sql3.xml")
+	raw, err := xml.ReadMapperFile("./mapper/sql3.xml")
 	if err != nil {
 		fmt.Println(err)
 	}

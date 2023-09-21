@@ -1,4 +1,4 @@
-package reader
+package component
 
 import (
 	"encoding/xml"
@@ -7,17 +7,17 @@ import (
 	"sql-mapper/helper"
 )
 
-type dmlBodyRaw struct {
-	XMLName    xml.Name     `xml:"Body"`
-	SelectRaws []*selectRaw `xml:"Select"`
-	InputRaws  []*insertRaw `xml:"Insert"`
-	UpdateRaws []*updateRaw `xml:"Update"`
-	DeleteRaws []*deleteRaw `xml:"Delete"`
+type DmlBodyComponent struct {
+	XMLName xml.Name           `xml:"Body"`
+	Selects []*selectComponent `xml:"Select"`
+	Inserts []*insertComponent `xml:"Insert"`
+	Updates []*updateComponent `xml:"Update"`
+	Deletes []*deleteComponent `xml:"Delete"`
 }
 
-func (b dmlBodyRaw) toEntity(absFilePath string) (*entity.DMLBody, errors.Error) {
+func (b DmlBodyComponent) ToEntity(absFilePath string) (*entity.DMLBody, errors.Error) {
 	var s []*entity.Select
-	for _, sql := range b.SelectRaws {
+	for _, sql := range b.Selects {
 		elem, err := sql.toEntity(absFilePath)
 		if err != nil {
 			return nil, err
@@ -26,7 +26,7 @@ func (b dmlBodyRaw) toEntity(absFilePath string) (*entity.DMLBody, errors.Error)
 	}
 
 	var i []*entity.Insert
-	for _, sql := range b.InputRaws {
+	for _, sql := range b.Inserts {
 		elem, err := sql.toEntity(absFilePath)
 		if err != nil {
 			return nil, err
@@ -35,7 +35,7 @@ func (b dmlBodyRaw) toEntity(absFilePath string) (*entity.DMLBody, errors.Error)
 	}
 
 	var u []*entity.Update
-	for _, sql := range b.UpdateRaws {
+	for _, sql := range b.Updates {
 		elem, err := sql.toEntity(absFilePath)
 		if err != nil {
 			return nil, err
@@ -44,7 +44,7 @@ func (b dmlBodyRaw) toEntity(absFilePath string) (*entity.DMLBody, errors.Error)
 	}
 
 	var d []*entity.Delete
-	for _, sql := range b.DeleteRaws {
+	for _, sql := range b.Deletes {
 		elem, err := sql.toEntity(absFilePath)
 		if err != nil {
 			return nil, err
@@ -61,23 +61,22 @@ func (b dmlBodyRaw) toEntity(absFilePath string) (*entity.DMLBody, errors.Error)
 	}, nil
 }
 
-type insertRaw struct {
-	//XMLName  xml.Name   `xml:"Insert"`
-	CharData string     `xml:",chardata"`
-	Name     string     `xml:"name,attr"`
-	PartRaws []*partRaw `xml:"Part"`
+type insertComponent struct {
+	CharData string           `xml:",chardata"`
+	Name     string           `xml:"name,attr"`
+	Parts    []*partComponent `xml:"Part"`
 }
 
-func (s insertRaw) toEntity(absFilePath string) (*entity.Insert, errors.Error) {
+func (s insertComponent) toEntity(absFilePath string) (*entity.Insert, errors.Error) {
 
-	if helper.IsBlank(s.CharData) && len(s.PartRaws) == 0 {
+	if helper.IsBlank(s.CharData) && len(s.Parts) == 0 {
 		return nil, errors.BuildBasicErr(errors.ParseQueryErr)
 	}
 
 	part := []*entity.Part{}
 	if helper.IsBlank(s.CharData) {
-		for _, raw := range s.PartRaws {
-			part = append(part, raw.toEntity())
+		for _, p := range s.Parts {
+			part = append(part, p.toEntity())
 		}
 	}
 
@@ -92,23 +91,22 @@ func (s insertRaw) toEntity(absFilePath string) (*entity.Insert, errors.Error) {
 	}, nil
 }
 
-type updateRaw struct {
-	//XMLName  xml.Name   `xml:"Update"`
-	CharData string     `xml:",chardata"`
-	Name     string     `xml:"name,attr"`
-	PartRaws []*partRaw `xml:"Part"`
+type updateComponent struct {
+	CharData string           `xml:",chardata"`
+	Name     string           `xml:"name,attr"`
+	Parts    []*partComponent `xml:"Part"`
 }
 
-func (s updateRaw) toEntity(absFilePath string) (*entity.Update, errors.Error) {
+func (s updateComponent) toEntity(absFilePath string) (*entity.Update, errors.Error) {
 
-	if helper.IsBlank(s.CharData) && len(s.PartRaws) == 0 {
+	if helper.IsBlank(s.CharData) && len(s.Parts) == 0 {
 		return nil, errors.BuildBasicErr(errors.ParseQueryErr)
 	}
 
 	part := []*entity.Part{}
 	if helper.IsBlank(s.CharData) {
-		for _, raw := range s.PartRaws {
-			part = append(part, raw.toEntity())
+		for _, p := range s.Parts {
+			part = append(part, p.toEntity())
 		}
 	}
 
@@ -123,23 +121,22 @@ func (s updateRaw) toEntity(absFilePath string) (*entity.Update, errors.Error) {
 	}, nil
 }
 
-type deleteRaw struct {
-	//XMLName  xml.Name   `xml:"Delete"`
-	CharData string     `xml:",chardata"`
-	Name     string     `xml:"name,attr"`
-	PartRaws []*partRaw `xml:"Part"`
+type deleteComponent struct {
+	CharData string           `xml:",chardata"`
+	Name     string           `xml:"name,attr"`
+	Parts    []*partComponent `xml:"Part"`
 }
 
-func (s deleteRaw) toEntity(absFilePath string) (*entity.Delete, errors.Error) {
+func (s deleteComponent) toEntity(absFilePath string) (*entity.Delete, errors.Error) {
 
-	if helper.IsBlank(s.CharData) && len(s.PartRaws) == 0 {
+	if helper.IsBlank(s.CharData) && len(s.Parts) == 0 {
 		return nil, errors.BuildBasicErr(errors.ParseQueryErr)
 	}
 
 	part := []*entity.Part{}
 	if helper.IsBlank(s.CharData) {
-		for _, raw := range s.PartRaws {
-			part = append(part, raw.toEntity())
+		for _, p := range s.Parts {
+			part = append(part, p.toEntity())
 		}
 	}
 
@@ -154,22 +151,22 @@ func (s deleteRaw) toEntity(absFilePath string) (*entity.Delete, errors.Error) {
 	}, nil
 }
 
-type selectRaw struct {
-	XMLName  xml.Name   `xml:"Select"`
-	CharData string     `xml:",chardata"`
-	Name     string     `xml:"name,attr"`
-	PartRaws []*partRaw `xml:"Part"`
+type selectComponent struct {
+	XMLName  xml.Name         `xml:"Select"`
+	CharData string           `xml:",chardata"`
+	Name     string           `xml:"name,attr"`
+	Parts    []*partComponent `xml:"Part"`
 }
 
-func (s *selectRaw) toEntity(absFilePath string) (*entity.Select, errors.Error) {
-	if helper.IsBlank(s.CharData) && len(s.PartRaws) == 0 {
+func (s *selectComponent) toEntity(absFilePath string) (*entity.Select, errors.Error) {
+	if helper.IsBlank(s.CharData) && len(s.Parts) == 0 {
 		return nil, errors.BuildBasicErr(errors.ParseQueryErr)
 	}
 
 	part := []*entity.Part{}
 	if helper.IsBlank(s.CharData) {
-		for _, raw := range s.PartRaws {
-			part = append(part, raw.toEntity())
+		for _, p := range s.Parts {
+			part = append(part, p.toEntity())
 		}
 	}
 
@@ -184,17 +181,17 @@ func (s *selectRaw) toEntity(absFilePath string) (*entity.Select, errors.Error) 
 	}, nil
 }
 
-type partRaw struct {
-	Name     string    `xml:"name,attr"`
-	CharData string    `xml:",chardata"`
-	CaseRaws []caseRaw `xml:"Case"`
+type partComponent struct {
+	Name     string          `xml:"name,attr"`
+	CharData string          `xml:",chardata"`
+	Cases    []caseComponent `xml:"Case"`
 }
 
-func (p *partRaw) toEntity() *entity.Part {
+func (p *partComponent) toEntity() *entity.Part {
 
 	cases := []*entity.Case{}
-	for _, raw := range p.CaseRaws {
-		cases = append(cases, raw.toEntity())
+	for _, c := range p.Cases {
+		cases = append(cases, c.toEntity())
 	}
 
 	return &entity.Part{
@@ -204,12 +201,12 @@ func (p *partRaw) toEntity() *entity.Part {
 	}
 }
 
-type caseRaw struct {
+type caseComponent struct {
 	Name     string `xml:"name,attr"`
 	CharData string `xml:",chardata"`
 }
 
-func (c *caseRaw) toEntity() *entity.Case {
+func (c *caseComponent) toEntity() *entity.Case {
 	return &entity.Case{
 		Name:     c.Name,
 		CharData: helper.ReplaceNewLineAndTabToSpace(c.CharData),

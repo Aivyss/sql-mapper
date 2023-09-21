@@ -14,4 +14,6 @@ const (
 	CommitTxErrID
 	NoTxErrID
 	ParseSqlErrID
+	NotFoundQueryClientErrID
+	RegisterQueryClientErrID
 )

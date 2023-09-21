@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Context>
+    <QueryClients>
+        <QueryClient identifier="identifier1" filePath="../mapper/sql1.xml"/>
+
+    </QueryClients>
+</Context>
