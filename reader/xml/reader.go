@@ -2,7 +2,9 @@ package xml
 
 import (
 	"encoding/xml"
+	"fmt"
 	"sql-mapper/entity"
+	"sql-mapper/enum"
 	"sql-mapper/errors"
 	"sql-mapper/helper"
 	"sql-mapper/reader/xml/component"
@@ -36,6 +38,54 @@ func ReadMapperFile(filePath string) (*entity.DMLBody, errors.Error) {
 	return body.ToEntity(*absFilePath)
 }
 
-func ReadSettings(filePath string) {
+func ReadSettings(filePath *string) (*component.AppCtxComponent, errors.Error) {
+	xmlByteSlice, absFilePath, err := helper.ReadFile(*filePath)
+	if err != nil {
+		return nil, err
+	}
 
+	appCtxComp := new(component.AppCtxComponent)
+	xmlErr := xml.Unmarshal(xmlByteSlice, appCtxComp)
+	if xmlErr != nil {
+		return nil, errors.BuildErrWithOriginal(errors.FileReadErr, err)
+	}
+
+	filePath = absFilePath
+	return appCtxComp, nil
+}
+
+func ReadQueryMapByXml(filePath string) (*entity.QueryMap, errors.Error) {
+	queryBody, err := ReadMapperFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	path := queryBody.AbsFilePath
+	selectMap := map[string]*entity.Select{}
+	insertMap := map[string]*entity.Insert{}
+	updateMap := map[string]*entity.Update{}
+	deleteMap := map[string]*entity.Delete{}
+
+	for _, query := range queryBody.Selects {
+		selectMap[fmt.Sprintf(enum.PathFormatGen.SelectPathFormat(), path, query.Name)] = query
+	}
+	for _, query := range queryBody.Inserts {
+		insertMap[fmt.Sprintf(enum.PathFormatGen.InsertPathFormat(), path, query.Name)] = query
+	}
+	for _, query := range queryBody.Updates {
+		updateMap[fmt.Sprintf(enum.PathFormatGen.UpdatePathFormat(), path, query.Name)] = query
+	}
+	for _, query := range queryBody.Deletes {
+		deleteMap[fmt.Sprintf(enum.PathFormatGen.DeletePathFormat(), path, query.Name)] = query
+	}
+
+	queryMapPointer := &entity.QueryMap{
+		FilePath:  path,
+		SelectMap: selectMap,
+		InsertMap: insertMap,
+		UpdateMap: updateMap,
+		DeleteMap: deleteMap,
+	}
+
+	return queryMapPointer, nil
 }

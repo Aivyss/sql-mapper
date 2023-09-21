@@ -25,4 +25,6 @@ type QueryClient interface {
 
 	Update(ctx context.Context, tagName string, args map[string]any, conditions ...entity.PredicateConditions) (int64, errors.Error)
 	UpdateTx(ctx context.Context, tx *sqlx.Tx, tagName string, args map[string]any, conditions ...entity.PredicateConditions) (int64, errors.Error)
+
+	Id() string
 }

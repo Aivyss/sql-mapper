@@ -1,17 +1,19 @@
 package component
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+)
 
 type AppCtxComponent struct {
-	xml.Name              `xml:"Context"`
-	QueryClientsComponent `xml:"QueryClients"`
+	Name                 xml.Name              `xml:"Context"`
+	QueryClientComponent QueryClientsComponent `xml:"QueryClients"`
 }
 
 type QueryClientsComponent struct {
-	clients []QueryClientComponent `xml:"QueryClient"`
+	Clients []QueryClientComponent `xml:"QueryClient"`
 }
 
 type QueryClientComponent struct {
-	identifier string `xml:"identifier,attr"`
-	filePath   string `xml:"filePath,attr"`
+	Identifier string `xml:"identifier,attr"`
+	FilePath   string `xml:"filePath,attr"`
 }

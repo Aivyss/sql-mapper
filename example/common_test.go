@@ -4,6 +4,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // PostgreSQL
 	"os"
+	"sql-mapper/context"
 	"sql-mapper/endpoint"
 	"testing"
 )
@@ -19,9 +20,9 @@ var client3 endpoint.QueryClient
 func TestMain(m *testing.M) {
 	// before the test
 	db = sqlx.MustConnect(dbDriver, datasourceName)
-	client1, _ = endpoint.NewQueryClient(db, "identifier1", "./mapper/sql1.xml")
-	client2, _ = endpoint.NewQueryClient(db, "identifier2", "./mapper/sql2.xml")
-	client3, _ = endpoint.NewQueryClient(db, "identifier3", "./mapper/sql3.xml")
+	client1, _ = context.NewQueryClient(db, "identifier1", "./mapper/sql1.xml")
+	client2, _ = context.NewQueryClient(db, "identifier2", "./mapper/sql2.xml")
+	client3, _ = context.NewQueryClient(db, "identifier3", "./mapper/sql3.xml")
 
 	// run tests
 	exitCode := m.Run()

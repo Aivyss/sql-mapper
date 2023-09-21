@@ -7,8 +7,6 @@ const (
 	ReadBodyErrID
 	FileReadErrID
 	FindQueryErrID
-	DuplicatedIdentifierErrID
-	FindQueryMapErrID
 	ExecuteQueryErrID
 	BeginTxErrID
 	CommitTxErrID

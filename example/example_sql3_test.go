@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
-	"sql-mapper/endpoint"
+	lctx "sql-mapper/context"
 	"sql-mapper/entity"
 	"sql-mapper/reader/xml"
 	"testing"
@@ -21,7 +21,7 @@ func TestReadMapperFile(t *testing.T) {
 }
 
 func TestNewQueryClient3(t *testing.T) {
-	_, err := endpoint.NewQueryClient(db, "identifier-TestNewQueryClient", "./mapper/sql3.xml")
+	_, err := lctx.NewQueryClient(db, "identifier-TestNewQueryClient", "./mapper/sql3.xml")
 	assert.Nil(t, err)
 }
 

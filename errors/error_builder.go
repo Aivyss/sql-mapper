@@ -37,6 +37,13 @@ func BuildBasicErr(code errorCode) Error {
 			args:      map[string]string{},
 			original:  nil,
 		}
+	case Context:
+		return &defaultError{
+			errorCode: code,
+			message:   nil,
+			args:      map[string]string{},
+			original:  nil,
+		}
 	default:
 		return &defaultError{
 			errorCode: UndefinedErr,
@@ -78,6 +85,13 @@ func BuildErrWithOriginal(code errorCode, original error) Error {
 			original:  original,
 		}
 	case Sqlx:
+		return &defaultError{
+			errorCode: code,
+			message:   nil,
+			args:      map[string]string{},
+			original:  original,
+		}
+	case Context:
 		return &defaultError{
 			errorCode: code,
 			message:   nil,
