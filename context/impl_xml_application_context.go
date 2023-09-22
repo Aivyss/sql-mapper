@@ -18,6 +18,10 @@ type xmlApplicationContext struct {
 	queryClientMap map[string]endpoint.QueryClient
 }
 
+func (ctx *xmlApplicationContext) GetReadOnlyQueryClient(identifier string) (endpoint.ReadOnlyQueryClient, errors.Error) {
+	return ctx.GetQueryClient(identifier)
+}
+
 func (ctx *xmlApplicationContext) GetQueryClient(identifier string) (endpoint.QueryClient, errors.Error) {
 	client, ok := ctx.queryClientMap[identifier]
 	if !ok {
@@ -37,7 +41,7 @@ func (ctx *xmlApplicationContext) RegisterQueryClient(client endpoint.QueryClien
 	return nil
 }
 
-func BuildXmlApplicationContext(db *sqlx.DB, filePath string) (ApplicationContext, errors.Error) {
+func RegisterXmlContext(db *sqlx.DB, filePath string) (ApplicationContext, errors.Error) {
 	var resultErr errors.Error
 
 	xmlAppCtxOnce.Do(func() {

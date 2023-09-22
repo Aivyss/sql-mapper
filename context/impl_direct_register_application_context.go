@@ -10,6 +10,10 @@ type directApplicationContext struct {
 	queryClientMap map[string]endpoint.QueryClient
 }
 
+func (ctx *directApplicationContext) GetReadOnlyQueryClient(identifier string) (endpoint.ReadOnlyQueryClient, errors.Error) {
+	return ctx.GetQueryClient(identifier)
+}
+
 func (ctx *directApplicationContext) GetQueryClient(identifier string) (endpoint.QueryClient, errors.Error) {
 	client, ok := ctx.queryClientMap[identifier]
 	if !ok {

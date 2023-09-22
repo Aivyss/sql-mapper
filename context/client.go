@@ -10,6 +10,10 @@ import (
 	"sql-mapper/reader/xml"
 )
 
+func NewReadOnlyQueryClient(db *sqlx.DB, identifier string, filePath string) (endpoint.ReadOnlyQueryClient, errors.Error) {
+	return NewQueryClient(db, identifier, filePath)
+}
+
 func NewQueryClient(db *sqlx.DB, identifier string, filePath string) (endpoint.QueryClient, errors.Error) {
 	queryMap, err := xml.ReadQueryMapByXml(filePath)
 	statementMap := map[entity.Path]*sqlx.NamedStmt{}
@@ -50,7 +54,10 @@ func NewQueryClient(db *sqlx.DB, identifier string, filePath string) (endpoint.Q
 	registerDynamicQuery(db, dynamicQueries, enum.DELETE, statementMap)
 	queries = []entity.QueryEntity{}
 
-	return endpoint.NewDefaultQueryClient(identifier, db, queryMap, statementMap), nil
+	client := endpoint.NewDefaultQueryClient(identifier, db, queryMap, statementMap)
+	GetApplicationContext().RegisterQueryClient(client)
+
+	return client, nil
 }
 
 func registerDynamicQuery(db *sqlx.DB, dynamicQueries []*entity.DynamicQuery, dmlEnum enum.QueryEnum, statementMap map[entity.Path]*sqlx.NamedStmt) {

@@ -7,7 +7,7 @@ import (
 )
 
 func TestXmlAppCtx(t *testing.T) {
-	ctx, err := context.BuildXmlApplicationContext(db, "./setting/settings.xml")
+	ctx, err := context.RegisterXmlContext(db, "./setting/settings.xml")
 	assert.Nil(t, err)
 
 	identifiers := []string{"identifier4-1", "identifier4-2", "identifier4-3"}
@@ -19,7 +19,7 @@ func TestXmlAppCtx(t *testing.T) {
 }
 
 func TestAppCtx(t *testing.T) {
-	xmlAppCtx, err := context.BuildXmlApplicationContext(db, "./setting/settings.xml")
+	xmlAppCtx, err := context.RegisterXmlContext(db, "./setting/settings.xml")
 	assert.Nil(t, err)
 
 	appCtx := context.GetApplicationContext()

@@ -8,11 +8,15 @@ import (
 type KindAppCtx int
 
 const (
-	XML KindAppCtx = iota
+	XML  KindAppCtx = iota
+	JSON            // not support yet
+	CSV             // not support yet
+	TSV             // not support yet
 )
 
 type ApplicationContext interface {
 	GetQueryClient(identifier string) (endpoint.QueryClient, errors.Error)
+	GetReadOnlyQueryClient(identifier string) (endpoint.ReadOnlyQueryClient, errors.Error)
 	RegisterQueryClient(client endpoint.QueryClient) errors.Error
 }
 
@@ -27,6 +31,10 @@ var integAppCtx = &integratedApplicationContext{
 type integratedApplicationContext struct {
 	xmlAppCtx    *xmlApplicationContext
 	directAppCtx *directApplicationContext
+}
+
+func (c *integratedApplicationContext) GetReadOnlyQueryClient(identifier string) (endpoint.ReadOnlyQueryClient, errors.Error) {
+	return c.GetReadOnlyQueryClient(identifier)
 }
 
 func (c *integratedApplicationContext) GetQueryClient(identifier string) (endpoint.QueryClient, errors.Error) {
