@@ -21,7 +21,7 @@ func TestReadMapperFile(t *testing.T) {
 }
 
 func TestNewQueryClient3(t *testing.T) {
-	_, err := lctx.NewQueryClient(db, "identifier-TestNewQueryClient", "./mapper/sql3.xml")
+	_, err := lctx.NewQueryClient("identifier-TestNewQueryClient", "./mapper/sql3.xml", false)
 	assert.Nil(t, err)
 }
 

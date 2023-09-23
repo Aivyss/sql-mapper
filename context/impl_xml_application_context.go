@@ -1,47 +1,52 @@
 package context
 
 import (
-	"github.com/jmoiron/sqlx"
-	"sql-mapper/endpoint"
 	"sql-mapper/errors"
 	"sql-mapper/reader/xml"
-	"sync"
+	"strconv"
 )
 
-var xmlAppCtxOnce sync.Once
-
-// xmlAppCtx managed by singleton
-var xmlAppCtx *xmlApplicationContext
+type queryClientKey struct {
+	identifier string
+	readOnly   bool
+}
 
 // xmlApplicationContext application context based on xml file
 type xmlApplicationContext struct {
-	queryClientMap map[string]endpoint.QueryClient
+	dBManager
+	queryClientMap map[queryClientKey]QueryClient
 }
 
-func (ctx *xmlApplicationContext) GetReadOnlyQueryClient(identifier string) (endpoint.ReadOnlyQueryClient, errors.Error) {
-	return ctx.GetQueryClient(identifier)
-}
-
-func (ctx *xmlApplicationContext) GetQueryClient(identifier string) (endpoint.QueryClient, errors.Error) {
-	client, ok := ctx.queryClientMap[identifier]
+func (ctx *xmlApplicationContext) GetReadOnlyQueryClient(identifier string) (ReadOnlyQueryClient, errors.Error) {
+	client, ok := ctx.queryClientMap[getQueryKey(identifier, true)]
 	if !ok {
 		return nil, errors.BuildBasicErr(errors.NotFoundQueryClientErr)
 	}
 
 	return client, nil
 }
-func (ctx *xmlApplicationContext) RegisterQueryClient(client endpoint.QueryClient) errors.Error {
-	_, ok := ctx.queryClientMap[client.Id()]
+
+func (ctx *xmlApplicationContext) GetQueryClient(identifier string) (QueryClient, errors.Error) {
+	client, ok := ctx.queryClientMap[getQueryKey(identifier, false)]
+	if !ok {
+		return nil, errors.BuildBasicErr(errors.NotFoundQueryClientErr)
+	}
+
+	return client, nil
+}
+
+func (ctx *xmlApplicationContext) RegisterQueryClient(client QueryClient) errors.Error {
+	_, ok := ctx.queryClientMap[getQueryKey(client.Id(), false)]
 	if ok {
 		return errors.BuildBasicErr(errors.RegisterQueryClientErr)
 	}
 
-	ctx.queryClientMap[client.Id()] = client
+	ctx.queryClientMap[getQueryKey(client.Id(), false)] = client
 
 	return nil
 }
 
-func RegisterXmlContext(db *sqlx.DB, filePath string) (ApplicationContext, errors.Error) {
+func registerXmlContext(filePath string) (ApplicationContext, errors.Error) {
 	var resultErr errors.Error
 
 	xmlAppCtxOnce.Do(func() {
@@ -50,14 +55,22 @@ func RegisterXmlContext(db *sqlx.DB, filePath string) (ApplicationContext, error
 			resultErr = err
 		}
 
-		clientMap := map[string]endpoint.QueryClient{}
+		clientMap := map[queryClientKey]QueryClient{}
 		for _, client := range appCtxComp.QueryClientComponent.Clients {
-			queryClient, err := NewQueryClient(db, client.Identifier, client.FilePath)
+			readOnly, pErr := strconv.ParseBool(client.ReadOnly)
+			if pErr != nil {
+				readOnly = true
+			}
+			queryClient, err := NewQueryClient(client.Identifier, client.FilePath, readOnly)
+
 			if err != nil {
 				resultErr = err
 			}
 
-			clientMap[queryClient.Id()] = queryClient
+			clientMap[queryClientKey{
+				identifier: queryClient.Id(),
+				readOnly:   readOnly,
+			}] = queryClient
 		}
 
 		xmlAppCtx = &xmlApplicationContext{

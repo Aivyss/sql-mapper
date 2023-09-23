@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Context>
     <QueryClients>
-        <QueryClient identifier="identifier4-1" filePath="./mapper/sql1.xml"/>
-        <QueryClient identifier="identifier4-2" filePath="./mapper/sql2.xml"/>
-        <QueryClient identifier="identifier4-3" filePath="./mapper/sql3.xml"/>
+        <QueryClient identifier="identifier4-1" readOnly="false" filePath="./mapper/sql1.xml"/>
+        <QueryClient identifier="identifier4-2" readOnly="false" filePath="./mapper/sql2.xml"/>
+        <QueryClient identifier="identifier4-3" readOnly="false" filePath="./mapper/sql3.xml"/>
     </QueryClients>
 </Context>

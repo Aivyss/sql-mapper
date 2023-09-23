@@ -1,4 +1,4 @@
-package endpoint
+package context
 
 import (
 	"context"
@@ -30,4 +30,5 @@ type ReadOnlyQueryClient interface {
 	GetTx(ctx context.Context, tx *sqlx.Tx, tagName string, dest any, args map[string]any, conditions ...entity.PredicateConditions) errors.Error
 
 	Id() string
+	ReadOnly() bool
 }
