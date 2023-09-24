@@ -14,4 +14,6 @@ const (
 	ParseSqlErrID
 	NotFoundQueryClientErrID
 	RegisterQueryClientErrID
+	BootstrapErrID
+	WrongReadOnlySettingErrID
 )

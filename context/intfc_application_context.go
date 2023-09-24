@@ -38,7 +38,18 @@ func (c *integratedApplicationContext) GetDB(readDB bool) *sqlx.DB {
 }
 
 func (c *integratedApplicationContext) GetReadOnlyQueryClient(identifier string) (ReadOnlyQueryClient, errors.Error) {
-	return c.GetQueryClient(identifier)
+	var resultErr errors.Error
+
+	for _, context := range c.getContexts() {
+		client, err := context.GetReadOnlyQueryClient(identifier)
+		if client != nil {
+			return client, nil
+		}
+
+		resultErr = err
+	}
+
+	return nil, resultErr
 }
 
 func (c *integratedApplicationContext) GetQueryClient(identifier string) (QueryClient, errors.Error) {

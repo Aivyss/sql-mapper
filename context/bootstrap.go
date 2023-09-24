@@ -3,7 +3,10 @@ package context
 import (
 	"github.com/jmoiron/sqlx"
 	"sql-mapper/errors"
+	"sync"
 )
+
+var bootstrap sync.Once
 
 func BootstrapDual(write *sqlx.DB, read *sqlx.DB) *initiator {
 	ctx := GetApplicationContext()
@@ -16,15 +19,21 @@ func BootstrapDual(write *sqlx.DB, read *sqlx.DB) *initiator {
 }
 
 func Bootstrap(db *sqlx.DB) *initiator {
-	return BootstrapDual(db, nil)
+	var init *initiator
+
+	bootstrap.Do(func() {
+		init = BootstrapDual(db, nil)
+	})
+
+	if init == nil {
+		panic(errors.BuildBasicErr(errors.BootstrapErr))
+	}
+
+	return init
 }
 
 type initiator struct{}
 
 func (i *initiator) InitByXml(filePath string) (ApplicationContext, errors.Error) {
 	return registerXmlContext(filePath)
-}
-
-func test() {
-
 }

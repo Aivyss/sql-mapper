@@ -1,4 +1,4 @@
-package example
+package test
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	lctx "sql-mapper/context"
 	"sql-mapper/entity"
 	"sql-mapper/reader/xml"
+	"sql-mapper/test/helper"
 	"testing"
 )
 
@@ -21,12 +22,16 @@ func TestReadMapperFile(t *testing.T) {
 }
 
 func TestNewQueryClient3(t *testing.T) {
-	_, err := lctx.NewQueryClient("identifier-TestNewQueryClient", "./mapper/sql3.xml", false)
+	_, err := lctx.NewQueryClient("identifier-TestNewQueryClient", "./mapper/sql3.xml")
 	assert.Nil(t, err)
 }
 
 func TestQueries(t *testing.T) {
 	ctx := context.Background()
+	client2, err := lctx.GetApplicationContext().GetQueryClient("identifier2")
+	helper.DoPanicIfNotNil(err)
+	client3, err := lctx.GetApplicationContext().GetQueryClient("identifier3")
+	helper.DoPanicIfNotNil(err)
 
 	t.Run("get select", func(t *testing.T) {
 		// reset data

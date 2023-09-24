@@ -1,8 +1,10 @@
-package example
+package test
 
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	context2 "sql-mapper/context"
+	"sql-mapper/test/helper"
 	"testing"
 )
 
@@ -10,7 +12,10 @@ func TestFullDMLNonTx(t *testing.T) {
 	// create context
 	ctx := context.Background()
 
-	_, err := client2.Delete(ctx, "fullDelete", map[string]any{})
+	client2, err := context2.GetApplicationContext().GetQueryClient("identifier2")
+	helper.DoPanicIfNotNil(err)
+
+	_, err = client2.Delete(ctx, "fullDelete", map[string]any{})
 	assert.Nil(t, err)
 
 	var accounts []accountDb
@@ -61,6 +66,9 @@ func TestFullDMLNonTx(t *testing.T) {
 func TestFullDmlWithTx(t *testing.T) {
 	// create context
 	ctx := context.Background()
+
+	client2, err := context2.GetApplicationContext().GetQueryClient("identifier2")
+	helper.DoPanicIfNotNil(err)
 
 	t.Run("insert-rollback-test", func(t *testing.T) {
 		// reset

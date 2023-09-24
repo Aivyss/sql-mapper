@@ -16,5 +16,5 @@ type QueryClientsComponent struct {
 type QueryClientComponent struct {
 	Identifier string `xml:"identifier,attr"`
 	FilePath   string `xml:"filePath,attr"`
-	ReadOnly   string `xml:"readOnly,attr"`
+	ReadOnly   string `xml:"readOnly,attr"` // default: true
 }

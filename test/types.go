@@ -1,4 +1,4 @@
-package example
+package test
 
 type accountDb struct {
 	Id       int    `db:"account_id"`

@@ -36,12 +36,12 @@ func (ctx *xmlApplicationContext) GetQueryClient(identifier string) (QueryClient
 }
 
 func (ctx *xmlApplicationContext) RegisterQueryClient(client QueryClient) errors.Error {
-	_, ok := ctx.queryClientMap[getQueryKey(client.Id(), false)]
+	_, ok := ctx.queryClientMap[getQueryKey(client.Id(), client.ReadOnly())]
 	if ok {
 		return errors.BuildBasicErr(errors.RegisterQueryClientErr)
 	}
 
-	ctx.queryClientMap[getQueryKey(client.Id(), false)] = client
+	ctx.queryClientMap[getQueryKey(client.Id(), client.ReadOnly())] = client
 
 	return nil
 }
@@ -61,16 +61,34 @@ func registerXmlContext(filePath string) (ApplicationContext, errors.Error) {
 			if pErr != nil {
 				readOnly = true
 			}
-			queryClient, err := NewQueryClient(client.Identifier, client.FilePath, readOnly)
+
+			var queryClient QueryClient
+			if readOnly {
+				onlyQueryClient, err := NewReadOnlyQueryClient(client.Identifier, client.FilePath)
+
+				if err != nil {
+					resultErr = err
+				} else {
+					queryClient = onlyQueryClient.(QueryClient)
+				}
+
+			} else {
+				queryClient, err = NewQueryClient(client.Identifier, client.FilePath)
+				if err != nil {
+					resultErr = err
+				}
+			}
 
 			if err != nil {
 				resultErr = err
+			} else if queryClient == nil {
+				resultErr = errors.BuildBasicErr(errors.RegisterQueryClientErr)
+			} else {
+				clientMap[queryClientKey{
+					identifier: queryClient.Id(),
+					readOnly:   readOnly,
+				}] = queryClient
 			}
-
-			clientMap[queryClientKey{
-				identifier: queryClient.Id(),
-				readOnly:   readOnly,
-			}] = queryClient
 		}
 
 		xmlAppCtx = &xmlApplicationContext{

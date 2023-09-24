@@ -11,10 +11,14 @@ import (
 )
 
 func NewReadOnlyQueryClient(identifier string, filePath string) (ReadOnlyQueryClient, errors.Error) {
-	return NewQueryClient(identifier, filePath, false)
+	return newQueryClient(identifier, filePath, true)
 }
 
-func NewQueryClient(identifier string, filePath string, readOnly bool) (QueryClient, errors.Error) {
+func NewQueryClient(identifier string, filePath string) (QueryClient, errors.Error) {
+	return newQueryClient(identifier, filePath, false)
+}
+
+func newQueryClient(identifier string, filePath string, readOnly bool) (QueryClient, errors.Error) {
 	queryMap, err := xml.ReadQueryMapByXml(filePath)
 	statementMap := map[entity.Path]*sqlx.NamedStmt{}
 	if err != nil {
@@ -27,38 +31,45 @@ func NewQueryClient(identifier string, filePath string, readOnly bool) (QueryCli
 		queries = append(queries, v)
 	}
 	dynamicQueries := getDynamicQuery(queries)
-	db := GetApplicationContext().GetDB(readOnly)
+	appCtx := GetApplicationContext()
+	dbs := appCtx.GetDBs()
+	if dbs.Read == nil && readOnly {
+		return nil, errors.BuildBasicErr(errors.WrongReadOnlySettingErr)
+	}
+
+	db := appCtx.GetDB(readOnly)
 	registerDynamicQuery(db, dynamicQueries, enum.SELECT, statementMap)
 	queries = []entity.QueryEntity{}
 
-	if !readOnly {
-		// create insert query statements
-		for _, v := range queryMap.InsertMap {
-			queries = append(queries, v)
-		}
-		dynamicQueries = getDynamicQuery(queries)
-		registerDynamicQuery(db, dynamicQueries, enum.INSERT, statementMap)
-		queries = []entity.QueryEntity{}
-
-		// create update query statements
-		for _, v := range queryMap.UpdateMap {
-			queries = append(queries, v)
-		}
-		dynamicQueries = getDynamicQuery(queries)
-		registerDynamicQuery(db, dynamicQueries, enum.UPDATE, statementMap)
-		queries = []entity.QueryEntity{}
-
-		// create delete query statements
-		for _, v := range queryMap.DeleteMap {
-			queries = append(queries, v)
-		}
-		dynamicQueries = getDynamicQuery(queries)
-		registerDynamicQuery(db, dynamicQueries, enum.DELETE, statementMap)
-		queries = []entity.QueryEntity{}
+	// create insert query statements
+	for _, v := range queryMap.InsertMap {
+		queries = append(queries, v)
 	}
+	dynamicQueries = getDynamicQuery(queries)
+	registerDynamicQuery(db, dynamicQueries, enum.INSERT, statementMap)
+	queries = []entity.QueryEntity{}
+
+	// create update query statements
+	for _, v := range queryMap.UpdateMap {
+		queries = append(queries, v)
+	}
+	dynamicQueries = getDynamicQuery(queries)
+	registerDynamicQuery(db, dynamicQueries, enum.UPDATE, statementMap)
+	queries = []entity.QueryEntity{}
+
+	// create delete query statements
+	for _, v := range queryMap.DeleteMap {
+		queries = append(queries, v)
+	}
+	dynamicQueries = getDynamicQuery(queries)
+	registerDynamicQuery(db, dynamicQueries, enum.DELETE, statementMap)
+	queries = []entity.QueryEntity{}
 
 	client := NewDefaultQueryClient(identifier, queryMap, statementMap, readOnly)
-	GetApplicationContext().RegisterQueryClient(client)
+	err = appCtx.RegisterQueryClient(client)
+	if err != nil {
+		return nil, err
+	}
 
 	return client, nil
 }
