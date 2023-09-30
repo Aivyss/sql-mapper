@@ -1,8 +1,8 @@
 package context
 
 import (
+	"github.com/aivyss/sql-mapper/entity"
 	"github.com/jmoiron/sqlx"
-	"sql-mapper/entity"
 )
 
 func getQueryKey(identifier string, readOnly bool) queryClientKey {

@@ -1,4 +1,4 @@
-module sql-mapper
+module github.com/aivyss/sql-mapper
 
 go 1.20
 

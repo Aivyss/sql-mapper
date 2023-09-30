@@ -3,12 +3,12 @@ package test
 import (
 	"context"
 	"fmt"
+	lctx "github.com/aivyss/sql-mapper/context"
+	"github.com/aivyss/sql-mapper/entity"
+	"github.com/aivyss/sql-mapper/reader/xml"
+	"github.com/aivyss/sql-mapper/test/helper"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
-	lctx "sql-mapper/context"
-	"sql-mapper/entity"
-	"sql-mapper/reader/xml"
-	"sql-mapper/test/helper"
 	"testing"
 )
 

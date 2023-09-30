@@ -1,6 +1,6 @@
 package entity
 
-import "sql-mapper/enum"
+import "github.com/aivyss/sql-mapper/enum"
 
 type DynamicQuery struct {
 	FilePath    string

@@ -1,7 +1,7 @@
 package context
 
 import (
-	"sql-mapper/entity"
+	"github.com/aivyss/sql-mapper/entity"
 	"sync"
 )
 

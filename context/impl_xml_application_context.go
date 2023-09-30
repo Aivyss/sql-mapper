@@ -1,8 +1,8 @@
 package context
 
 import (
-	"sql-mapper/errors"
-	"sql-mapper/reader/xml"
+	"github.com/aivyss/sql-mapper/errors"
+	"github.com/aivyss/sql-mapper/reader/xml"
 	"strconv"
 )
 

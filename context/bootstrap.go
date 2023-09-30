@@ -1,8 +1,8 @@
 package context
 
 import (
+	"github.com/aivyss/sql-mapper/errors"
 	"github.com/jmoiron/sqlx"
-	"sql-mapper/errors"
 	"sync"
 )
 

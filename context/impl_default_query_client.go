@@ -3,11 +3,11 @@ package context
 import (
 	"context"
 	"fmt"
+	"github.com/aivyss/sql-mapper/entity"
+	"github.com/aivyss/sql-mapper/enum"
+	"github.com/aivyss/sql-mapper/errors"
+	"github.com/aivyss/sql-mapper/reader/xml"
 	"github.com/jmoiron/sqlx"
-	"sql-mapper/entity"
-	"sql-mapper/enum"
-	"sql-mapper/errors"
-	"sql-mapper/reader/xml"
 )
 
 func NewReadOnlyQueryClient(identifier string, filePath string) (ReadOnlyQueryClient, errors.Error) {

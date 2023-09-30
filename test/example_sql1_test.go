@@ -3,8 +3,8 @@ package test
 import (
 	"context"
 	"fmt"
-	ctx "sql-mapper/context"
-	"sql-mapper/test/helper"
+	ctx "github.com/aivyss/sql-mapper/context"
+	"github.com/aivyss/sql-mapper/test/helper"
 	"testing"
 )
 

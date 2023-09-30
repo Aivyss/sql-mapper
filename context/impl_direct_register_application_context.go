@@ -1,7 +1,7 @@
 package context
 
 import (
-	"sql-mapper/errors"
+	"github.com/aivyss/sql-mapper/errors"
 )
 
 // directApplicationContext application context

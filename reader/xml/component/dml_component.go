@@ -2,9 +2,9 @@ package component
 
 import (
 	"encoding/xml"
-	"sql-mapper/entity"
-	"sql-mapper/errors"
-	"sql-mapper/helper"
+	"github.com/aivyss/sql-mapper/entity"
+	"github.com/aivyss/sql-mapper/errors"
+	"github.com/aivyss/sql-mapper/helper"
 )
 
 type DmlBodyComponent struct {

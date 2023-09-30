@@ -2,8 +2,8 @@ package entity
 
 import (
 	"fmt"
+	"github.com/aivyss/sql-mapper/enum"
 	"sort"
-	"sql-mapper/enum"
 )
 
 type Path struct {

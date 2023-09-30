@@ -2,9 +2,9 @@ package test
 
 import (
 	"context"
+	context2 "github.com/aivyss/sql-mapper/context"
+	"github.com/aivyss/sql-mapper/test/helper"
 	"github.com/stretchr/testify/assert"
-	context2 "sql-mapper/context"
-	"sql-mapper/test/helper"
 	"testing"
 )
 

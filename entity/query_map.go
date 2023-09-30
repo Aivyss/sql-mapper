@@ -2,8 +2,8 @@ package entity
 
 import (
 	"fmt"
-	"sql-mapper/enum"
-	"sql-mapper/errors"
+	"github.com/aivyss/sql-mapper/enum"
+	"github.com/aivyss/sql-mapper/errors"
 )
 
 type QueryMap struct {

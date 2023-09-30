@@ -1,9 +1,9 @@
 package helper
 
 import (
+	"github.com/aivyss/sql-mapper/errors"
 	"os"
 	"path/filepath"
-	"sql-mapper/errors"
 )
 
 func ReadFile(filePath string) ([]byte, *string, errors.Error) {

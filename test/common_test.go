@@ -1,11 +1,11 @@
 package test
 
 import (
+	"github.com/aivyss/sql-mapper/context"
+	"github.com/aivyss/sql-mapper/test/helper"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // PostgreSQL
 	"os"
-	"sql-mapper/context"
-	"sql-mapper/test/helper"
 	"testing"
 )
 

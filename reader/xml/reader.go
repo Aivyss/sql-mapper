@@ -3,11 +3,11 @@ package xml
 import (
 	"encoding/xml"
 	"fmt"
-	"sql-mapper/entity"
-	"sql-mapper/enum"
-	"sql-mapper/errors"
-	"sql-mapper/helper"
-	"sql-mapper/reader/xml/component"
+	"github.com/aivyss/sql-mapper/entity"
+	"github.com/aivyss/sql-mapper/enum"
+	"github.com/aivyss/sql-mapper/errors"
+	"github.com/aivyss/sql-mapper/helper"
+	"github.com/aivyss/sql-mapper/reader/xml/component"
 )
 
 func ReadMapperFile(filePath string) (*entity.DMLBody, errors.Error) {

@@ -1,9 +1,9 @@
 package context
 
 import (
+	"github.com/aivyss/sql-mapper/entity"
+	"github.com/aivyss/sql-mapper/errors"
 	"github.com/jmoiron/sqlx"
-	"sql-mapper/entity"
-	"sql-mapper/errors"
 )
 
 type ApplicationContext interface {
