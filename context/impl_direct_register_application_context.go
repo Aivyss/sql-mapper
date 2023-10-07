@@ -10,8 +10,12 @@ type directApplicationContext struct {
 	queryClientMap map[queryClientKey]QueryClient
 }
 
+func (ctx *directApplicationContext) GetTxManager() TxManager {
+	return GetApplicationContext().GetTxManager()
+}
+
 func (ctx *directApplicationContext) GetReadOnlyQueryClient(identifier string) (ReadOnlyQueryClient, errors.Error) {
-	client, ok := ctx.queryClientMap[getQueryKey(identifier, true)]
+	client, ok := ctx.queryClientMap[getQueryClientKey(identifier, true)]
 	if !ok {
 		return nil, errors.BuildBasicErr(errors.NotFoundQueryClientErr)
 	}
@@ -20,7 +24,7 @@ func (ctx *directApplicationContext) GetReadOnlyQueryClient(identifier string) (
 }
 
 func (ctx *directApplicationContext) GetQueryClient(identifier string) (QueryClient, errors.Error) {
-	client, ok := ctx.queryClientMap[getQueryKey(identifier, false)]
+	client, ok := ctx.queryClientMap[getQueryClientKey(identifier, false)]
 	if !ok {
 		return nil, errors.BuildBasicErr(errors.NotFoundQueryClientErr)
 	}
@@ -28,7 +32,7 @@ func (ctx *directApplicationContext) GetQueryClient(identifier string) (QueryCli
 	return client, nil
 }
 func (ctx *directApplicationContext) RegisterQueryClient(client QueryClient) errors.Error {
-	qKey := getQueryKey(client.Id(), client.ReadOnly())
+	qKey := getQueryClientKey(client.Id(), client.ReadOnly())
 	_, ok := ctx.queryClientMap[qKey]
 	if ok {
 		return errors.BuildBasicErr(errors.RegisterQueryClientErr)

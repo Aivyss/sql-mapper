@@ -7,7 +7,7 @@ import (
 )
 
 func ReadFile(filePath string) ([]byte, *string, errors.Error) {
-	xmlByteSlice, err := os.ReadFile(filePath)
+	bs, err := os.ReadFile(filePath)
 
 	if err != nil {
 		return nil, nil, errors.BuildBasicErr(errors.FileReadErr)
@@ -17,5 +17,5 @@ func ReadFile(filePath string) ([]byte, *string, errors.Error) {
 	if err != nil {
 		return nil, nil, errors.BuildBasicErr(errors.FileReadErr)
 	}
-	return xmlByteSlice, &absFilePath, nil
+	return bs, &absFilePath, nil
 }

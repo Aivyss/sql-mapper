@@ -12,6 +12,7 @@ type ApplicationContext interface {
 	RegisterQueryClient(client QueryClient) errors.Error
 	GetDBs() *entity.DbSet
 	GetDB(readDB bool) *sqlx.DB
+	GetTxManager() TxManager
 }
 
 func GetApplicationContext() ApplicationContext {
@@ -23,6 +24,11 @@ type integratedApplicationContext struct {
 	xmlAppCtx    *xmlApplicationContext
 	directAppCtx *directApplicationContext
 	dbSet        *entity.DbSet
+	txManager    TxManager
+}
+
+func (c *integratedApplicationContext) GetTxManager() TxManager {
+	return c.txManager
 }
 
 func (c *integratedApplicationContext) GetDBs() *entity.DbSet {

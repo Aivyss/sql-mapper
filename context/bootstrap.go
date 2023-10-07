@@ -11,6 +11,11 @@ var bootstrap sync.Once
 func BootstrapDual(write *sqlx.DB, read *sqlx.DB) *initiator {
 	ctx := GetApplicationContext()
 	dbSet := ctx.GetDBs()
+	if write != nil {
+		integAppCtx.txManager = NewTxManager(write)
+	} else {
+		integAppCtx.txManager = NewTxManager(read)
+	}
 
 	dbSet.Write = write
 	dbSet.Read = read

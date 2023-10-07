@@ -17,8 +17,12 @@ type xmlApplicationContext struct {
 	queryClientMap map[queryClientKey]QueryClient
 }
 
+func (ctx *xmlApplicationContext) GetTxManager() TxManager {
+	return GetApplicationContext().GetTxManager()
+}
+
 func (ctx *xmlApplicationContext) GetReadOnlyQueryClient(identifier string) (ReadOnlyQueryClient, errors.Error) {
-	client, ok := ctx.queryClientMap[getQueryKey(identifier, true)]
+	client, ok := ctx.queryClientMap[getQueryClientKey(identifier, true)]
 	if !ok {
 		return nil, errors.BuildBasicErr(errors.NotFoundQueryClientErr)
 	}
@@ -27,7 +31,7 @@ func (ctx *xmlApplicationContext) GetReadOnlyQueryClient(identifier string) (Rea
 }
 
 func (ctx *xmlApplicationContext) GetQueryClient(identifier string) (QueryClient, errors.Error) {
-	client, ok := ctx.queryClientMap[getQueryKey(identifier, false)]
+	client, ok := ctx.queryClientMap[getQueryClientKey(identifier, false)]
 	if !ok {
 		return nil, errors.BuildBasicErr(errors.NotFoundQueryClientErr)
 	}
@@ -36,12 +40,12 @@ func (ctx *xmlApplicationContext) GetQueryClient(identifier string) (QueryClient
 }
 
 func (ctx *xmlApplicationContext) RegisterQueryClient(client QueryClient) errors.Error {
-	_, ok := ctx.queryClientMap[getQueryKey(client.Id(), client.ReadOnly())]
+	_, ok := ctx.queryClientMap[getQueryClientKey(client.Id(), client.ReadOnly())]
 	if ok {
 		return errors.BuildBasicErr(errors.RegisterQueryClientErr)
 	}
 
-	ctx.queryClientMap[getQueryKey(client.Id(), client.ReadOnly())] = client
+	ctx.queryClientMap[getQueryClientKey(client.Id(), client.ReadOnly())] = client
 
 	return nil
 }
