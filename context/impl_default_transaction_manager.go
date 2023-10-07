@@ -3,8 +3,8 @@ package context
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"github.com/aivyss/sql-mapper/entity"
+	lerr "github.com/aivyss/sql-mapper/errors"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -12,14 +12,14 @@ type defaultTxManager struct {
 	writeDB *sqlx.DB
 }
 
-func (d *defaultTxManager) Txx(ctx context.Context, txBlock TxBlockAuto) error {
+func (d *defaultTxManager) Txx(ctx context.Context, txBlock TxBlockAuto) lerr.Error {
 	return d.TxxWithOpt(ctx, nil, txBlock)
 }
 
-func (d *defaultTxManager) TxxWithOpt(ctx context.Context, opts *sql.TxOptions, txBlock TxBlockAuto) error {
-	tx, err := d.writeDB.BeginTxx(ctx, opts)
-	if err != nil {
-		return err
+func (d *defaultTxManager) TxxWithOpt(ctx context.Context, opts *sql.TxOptions, txBlock TxBlockAuto) (err lerr.Error) {
+	tx, dbErr := d.writeDB.BeginTxx(ctx, opts)
+	if dbErr != nil {
+		return lerr.BuildErrWithOriginal(lerr.StartTransactionErr, err)
 	}
 
 	defer func() {
@@ -28,9 +28,9 @@ func (d *defaultTxManager) TxxWithOpt(ctx context.Context, opts *sql.TxOptions, 
 			err2, ok := rec.(error)
 
 			if ok {
-				err = err2
+				err = lerr.BuildErrWithOriginal(lerr.TransactionClientSidePanicErr, err2)
 			} else {
-				err = errors.New("unknown err")
+				err = lerr.BuildBasicErr(lerr.UnknownTransactionErr)
 			}
 
 			_ = tx.Rollback()
@@ -42,19 +42,22 @@ func (d *defaultTxManager) TxxWithOpt(ctx context.Context, opts *sql.TxOptions, 
 	}()
 
 	ctx = entity.NewTxContext(ctx, tx)
-	err = txBlock(ctx)
+	clientSideErr := txBlock(ctx)
+	if clientSideErr != nil {
+		err = lerr.BuildErrWithOriginal(lerr.TransactionClientSideErr, clientSideErr)
+	}
 
 	return err
 }
 
-func (d *defaultTxManager) Tx(ctx context.Context, txBlock TxBlock) (err error) {
+func (d *defaultTxManager) Tx(ctx context.Context, txBlock TxBlock) (err lerr.Error) {
 	return d.TxWithOpt(ctx, nil, txBlock)
 }
 
-func (d *defaultTxManager) TxWithOpt(ctx context.Context, opts *sql.TxOptions, txBlock TxBlock) error {
-	tx, err := d.writeDB.BeginTxx(ctx, opts)
-	if err != nil {
-		return err
+func (d *defaultTxManager) TxWithOpt(ctx context.Context, opts *sql.TxOptions, txBlock TxBlock) (err lerr.Error) {
+	tx, dbErr := d.writeDB.BeginTxx(ctx, opts)
+	if dbErr != nil {
+		return lerr.BuildErrWithOriginal(lerr.StartTransactionErr, err)
 	}
 
 	defer func() {
@@ -63,9 +66,9 @@ func (d *defaultTxManager) TxWithOpt(ctx context.Context, opts *sql.TxOptions, t
 			err2, ok := rec.(error)
 
 			if ok {
-				err = err2
+				err = lerr.BuildErrWithOriginal(lerr.TransactionClientSidePanicErr, err2)
 			} else {
-				err = errors.New("unknown err")
+				err = lerr.BuildBasicErr(lerr.UnknownTransactionErr)
 			}
 
 			_ = tx.Rollback()
@@ -76,7 +79,10 @@ func (d *defaultTxManager) TxWithOpt(ctx context.Context, opts *sql.TxOptions, t
 		}
 	}()
 
-	err = txBlock(ctx, tx)
+	clientSideErr := txBlock(ctx, tx)
+	if clientSideErr != nil {
+		err = lerr.BuildErrWithOriginal(lerr.TransactionClientSideErr, clientSideErr)
+	}
 
 	return err
 }

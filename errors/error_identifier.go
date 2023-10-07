@@ -16,4 +16,8 @@ const (
 	RegisterQueryClientErrID
 	BootstrapErrID
 	WrongReadOnlySettingErrID
+	StartTransactionErrID
+	UnknownTransactionErrID
+	TransactionClientSideErrID
+	TransactionClientSidePanicErrID
 )
