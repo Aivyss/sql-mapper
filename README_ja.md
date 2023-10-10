@@ -1,12 +1,13 @@
-# Introduction
-- This package is currently developed based on `github.com/jmoiron/sqlx v1.3.5`.
-- This package reads SQL created in XML and generates a `QueryClient`, which is a layer for executing SQL created in XML.
-- This package handles only DML (`INSERT`, `SELECT`, `UPDATE`, `DELETE`) operations. The creator does not recommend handling DDL and other operations in this package.
-- One XML file can generate one QueryClient.
-- Creator: `Aivyss`
-- License: `MIT LICENSE`
+# Intro
+- このpackageは現時点で`github.com/jmoiron/sqlx v1.3.5`を元に開発されている。
+- このpackageはXML上に作成したSQLを読み込み、`QueryClient`を作り出す。`QueryClient`はXMLで作成したSQLを実行するLayerである。
+- このpackageはDML(`INSERT`、`SELECT`、`UPDATE`、`DELETE`)のみ扱う。DDLなどをプログラミング言語で扱う事を作成者はおすすめしない。
+- 一つのXMLファイルは一つの`QueryClient`が生成できる。
+- 作成者：`Aivyss`
+- 権利: `MIT LICENSE`
 
-# Interface `ApplicationContext`
+# interface `ApplicationContext`
+
 ```go
 type ApplicationContext interface {
   GetQueryClient(identifier string) (QueryClient, errors.Error)
@@ -16,9 +17,10 @@ type ApplicationContext interface {
   GetDB(readDB bool) *sqlx.DB
 }
 ```
-- This package manages the overall application queries through the `ApplicationContext` interface.
+- このpackageは`ApplicationContext`というinterfaceにより、アプリの全体のクエリを管理している。
 
-# Creation: `ApplicationContext`
+
+# XML作成の仕方：`ApplicationContext`
 ```go
 // DBの設定1(簡単)
 context.Bootstrap(db) // initiator構造体の値をリターン
@@ -45,15 +47,16 @@ context.Bootstrap(db).InitByXml("./setting/settings.xml")
 </Context>
 ```
 
-# Write DML Query
-- All queries are created under the Body tag.
-- Under Body, you can create multiple Select, Insert, Update, and Delete tags.
-- DML tags should have unique names (name attribute).
-- Creating queries:
-  - Create queries directly under DML tags.
-  - Use the `<Part>` tag to separate queries.
-  - Use `<Case>` tags inside `<Part>` to create dynamic queries.
-  - The name attribute of the `<Part>` tag is not mandatory, but it becomes mandatory for `<Part>` tags used with `<Case>` tags.
+
+# XML作成の仕方：DML Query Part
+- 全てのクエリは`Body`というtagの直下に作成する。
+- `Body`の直下には複数の`Select`、`Insert`、`Update`、`Delete`tagを作成できる。
+- DML tagは名前(`name` attribute)を重複しないように作成する。
+- クエリ作成方法
+  - DML tagの直下にクエリを作成
+  - `<Part>`tagを利用してクエリを分けて作成する
+  - `<Part>`tagの内部に`<Case>`tagを入れて動的クエリを作成する
+  - `<Part>`tagの`name`attributeは必須ではないが、`<Case>`tagが使われる`<Part>`tagは`name`が必須になる。
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
 <Body>
@@ -131,16 +134,18 @@ context.Bootstrap(db).InitByXml("./setting/settings.xml")
 </Body>
 ```
 
-# Generating `QueryClient` Interface
-- Each `QueryClient` is mapped to a unique identifier string. Therefore, duplicate identifiers are not allowed.
-- To create a `QueryClient`, you can use the `context.NewQueryClient` function.
+# interface: `QueryClient`の生成
+- 各`QueryClient`は固有の`identifier`文字列にmappingされる。すなわち、重複した`identifier`はできない。
+- `QueryClient`を生成する為には`context.NewQueryClient`関数を使う。
 ```go
 func NewQueryClient(identifier string, filePath string) (QueryClient, errors.Error)
 func NewReadOnlyQueryClient(identifier string, filePath string) (ReadOnlyQueryClient, errors.Error)
 ```
-- While these methods can be used to create a `QueryClient`, it is preferable to use Context configuration.
+- このメソッドを利用することでQueryClientは生成できるが、Context設定を利用するのが好ましい。
 
-# Methods of `QueryClient`
+
+
+# `QueryClient`のメソッド
 ```go
 type QueryClient interface {
   ReadOnlyQueryClient
@@ -168,30 +173,31 @@ type ReadOnlyQueryClient interface {
   ReadOnly() bool
 }
 ```
-- The names of each method are self-explanatory, so explanations are kept brief.
-- Methods with `Tx` deal with transactions.
-- `tagName` is the unique name of the DML tag in XML.
-- The key in `args` is the `:key` in the query, and the value in `args` is the value to be assigned.
-- Conditions are used for dynamic queries when querying with `QueryClient` or `ReadOnlyQueryClient`.
+- 各メソッドの名前は直ぐ分かるように名付けられている為、説明は簡単にしたい。
+- TxがついているメソッドはTransactionと関している。
+- `tagName`はXMLのDML tagの固有の名前である。
+- `args`のkeyはクエリの`:key`であり`args`のvalueは代入される値である。
+- conditionsは動的クエリに使われる条件関数
 
-# `Condition` and `PredicateConditions`
+# `Condition`と`PredicateConditions`
 ```go
 type Condition struct {
 	PartName string
 	CaseName string
 }
 ```
-- Since the condition clauses are in the form `<Part><Case></Case></Part>` in this package, this structure is used to determine conditions.
+- このpackageは条件文が`<Part><Case></Case></Part>`の形になっているため、この構造体で条件を決める。
 
 ```go
 type PredicateConditions func() []*Condition
 ```
-- Lambdas are used to determine dynamic query conditions when executing queries with `QueryClient` or `ReadOnlyQueryClient`.
+- `QueryClient`や`ReadOnlyQueryClient`でクエリを実施する際、動的クエリの条件を決めるlambda
 
-# Error Handling
-- In this package, instead of returning the basic error in Go, it returns a specific `errors.Error`.
-- Only pre-defined `errors.Error` is returned.
-- For the definition of `errors.Error`, refer to the `error_code` and `error_identifier` in the `errors` directory.
+# エラーの管理
+- このpackageではgolangの基本的な`error`をリターンするわけではなく、固有の`errors.Error`を返す。
+- `errors.Error`は既に定義されているものだけリターンするようになっている。
+- `errors.Error`の定義に関しては`errors`ディレクトリの`error_code`と`error_identifier`を参照すること。
 
-# Specific Examples
-- You can understand more through the `test` test code.
+# 具体的な例
+`test`のテストコードで把握できる。
+
